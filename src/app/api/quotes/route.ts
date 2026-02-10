@@ -21,18 +21,62 @@ function toApiResponse(quote: any) {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const quotes = await db.quote.findMany({
-      orderBy: [
-        { brand: 'asc' },
-        { model: 'asc' },
-      ],
-    });
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "0"); // 0 means all (default for backward compatibility)
+    const brand = searchParams.get("brand");
+    const search = searchParams.get("search");
     
-    return NextResponse.json(quotes.map(toApiResponse));
+    // Build where clause
+    const where: any = {};
+    if (brand && brand !== 'all') {
+      where.brand = { equals: brand, mode: 'insensitive' };
+    }
+    if (search) {
+      where.OR = [
+        { model: { contains: search, mode: 'insensitive' } },
+        { repairLabel: { contains: search, mode: 'insensitive' } },
+        { repairId: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * (limit > 0 ? limit : 0);
+    const take = limit > 0 ? limit : undefined;
+
+    // Execute query with cache headers
+    const [quotes, total] = await Promise.all([
+      db.quote.findMany({
+        where,
+        orderBy: [
+          { brand: 'asc' },
+          { model: 'asc' },
+        ],
+        skip,
+        take,
+      }),
+      db.quote.count({ where }),
+    ]);
+    
+    const response = NextResponse.json({
+      data: quotes.map(toApiResponse),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: limit > 0 ? Math.ceil(total / limit) : 1,
+      }
+    });
+
+    // Add Cache-Control header (e.g., cache for 60 seconds)
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    
+    return response;
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    console.error("GET /api/quotes Error:", error);
+    return NextResponse.json({ error: "Failed to fetch quotes", details: (error as Error).message }, { status: 500 });
   }
 }
 
