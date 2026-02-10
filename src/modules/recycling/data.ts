@@ -1,10 +1,5 @@
-export interface PhoneModel {
-  model: string;
-  screenPrice: number;
-  batteryPrice: number;
-  baseRecyclePrice: number;
-  releaseYear: number;
-}
+
+import { PhoneModel } from './types';
 
 export const currentYear = 2026;
 
@@ -37,6 +32,13 @@ iPhone 11 Pro Max,419,99,160,2019
 iPhone 11 Pro,349,99,130,2019
 iPhone 11,249,99,90,2019`;
 
+export const storageTiers = [
+  { label: "64G / 128G", value: 0 },
+  { label: "256G", value: 15 },
+  { label: "512G", value: 30 },
+  { label: "1TB", value: 50 }
+];
+
 export const parseCSV = (csvText: string): PhoneModel[] => {
   const lines = csvText.trim().split('\n');
   return lines.slice(1).map(line => {
@@ -50,10 +52,3 @@ export const parseCSV = (csvText: string): PhoneModel[] => {
       };
   });
 };
-
-export const storageTiers = [
-  { label: "64G / 128G", value: 0 },
-  { label: "256G", value: 15 },
-  { label: "512G", value: 30 },
-  { label: "1TB", value: 50 }
-];
