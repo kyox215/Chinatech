@@ -184,7 +184,7 @@ export function RecycleCalculator() {
             <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
                 {/* Left: Price Info - Flexible width with min-width constraint */}
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate">
                         {t('finalPriceTitle')}
                     </span>
                     <div className="flex items-baseline gap-2 overflow-hidden">
@@ -409,56 +409,71 @@ export function RecycleCalculator() {
 
             {/* Right: Quote Panel (Desktop Only) */}
             <div className="hidden lg:flex lg:col-span-4 flex-col order-last z-30">
-                <div className="bg-slate-900 text-white rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-24 max-h-[calc(100vh-8rem)] transition-all duration-300 hover:shadow-indigo-500/20">
+                <div className="bg-white text-slate-900 rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-xl border border-slate-200 sticky top-24 max-h-[calc(100vh-8rem)] transition-all duration-300 hover:shadow-2xl">
                     
-                    <div className="mt-2 text-center border-b border-white/10 pb-6 relative z-10 shrink-0">
+                    <div className="mt-2 text-center border-b border-slate-100 pb-6 relative z-10 shrink-0">
                         <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('finalPriceTitle')}</div>
                         <div className="flex items-center justify-center">
-                            <span className="text-3xl font-bold mr-1 text-green-500">€</span>
-                            <span className="text-7xl font-bold tracking-tighter leading-none">{finalQuote}</span>
+                            <span className="text-3xl font-bold mr-1 text-slate-900">€</span>
+                            <span className="text-7xl font-bold tracking-tighter leading-none text-slate-900">{finalQuote}</span>
                         </div>
                         {/* Forecast */}
-                        <div className="mt-4 text-xs bg-white/5 rounded px-2 py-1 inline-block backdrop-blur-sm">
-                            <span className="opacity-60 mr-2">{t('nextMonthPred')}:</span>
-                            <span className="font-mono text-yellow-400 font-bold">€ {nextMonthPrice}</span>
-                            <span className="ml-1 text-red-400 text-[10px] animate-pulse">↓</span>
+                        <div className="mt-4 text-xs bg-yellow-50 border border-yellow-100 rounded-full px-3 py-1 inline-block backdrop-blur-sm">
+                            <span className="text-slate-500 mr-2">{t('nextMonthPred')}:</span>
+                            <span className="font-mono text-yellow-600 font-bold">€ {nextMonthPrice}</span>
+                            <span className="ml-1 text-red-500 text-[10px] animate-pulse">↓</span>
                         </div>
                     </div>
 
                     <div className="space-y-3 mt-6 flex-1 text-sm relative z-10 overflow-y-auto scrollbar-hide min-h-0">
-                        <div className="flex justify-between opacity-70 py-1"><span>{t('basePrice')}</span><span className="font-mono">€ {basePrice}</span></div>
+                        <div className="flex justify-between items-center py-1 border-b border-slate-50">
+                            <span className="text-slate-500 font-medium">{t('basePrice')}</span>
+                            <span className="font-mono font-bold text-slate-900">€ {basePrice}</span>
+                        </div>
                         
                         {depreciationCost > 0 && (
-                            <div className="flex justify-between text-red-300 py-1 border-b border-white/5 bg-red-900/20 px-1 -mx-1 rounded">
-                                <span>- {t('depreciationLoss')} ({holdDays}d)</span>
-                                <span className="font-mono">- {depreciationCost}</span>
+                            <div className="flex justify-between items-center text-red-600 py-2 border-b border-red-50 bg-red-50/50 px-3 -mx-3 rounded-lg">
+                                <span className="flex items-center gap-2 font-medium">
+                                    <AlertTriangle className="h-3.5 w-3.5" /> 
+                                    {t('depreciationLoss')} ({holdDays}d)
+                                </span>
+                                <span className="font-mono font-bold">- {depreciationCost}</span>
                             </div>
                         )}
                         
                         {selectedBattery?.value > 0 && (
-                            <div className="flex justify-between text-blue-300 py-1 border-b border-white/5">
-                                <span>- {t('batteryLoss')} ({selectedBattery.type === 'fixed' ? 'Fix' : '%'})</span>
-                                <span className="font-mono">- {selectedBattery.type === 'percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel.batteryPrice}</span>
+                            <div className="flex justify-between items-center text-blue-600 py-2 border-b border-slate-50">
+                                <span className="flex items-center gap-2 font-medium">
+                                    <Battery className="h-3.5 w-3.5" />
+                                    {t('batteryLoss')} ({selectedBattery.type === 'fixed' ? 'Fix' : '%'})
+                                </span>
+                                <span className="font-mono font-bold">- {selectedBattery.type === 'percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel.batteryPrice}</span>
                             </div>
                         )}
                         
                         {selectedCondition?.deductionPercent > 0 && (
-                            <div className="flex justify-between text-yellow-300 py-1 border-b border-white/5">
-                                <span>- {t('conditionLoss')} ({selectedCondition.id})</span>
-                                <span className="font-mono">- {Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
+                            <div className="flex justify-between items-center text-yellow-600 py-2 border-b border-slate-50">
+                                <span className="flex items-center gap-2 font-medium">
+                                    <ShieldAlert className="h-3.5 w-3.5" />
+                                    {t('conditionLoss')} ({selectedCondition.id})
+                                </span>
+                                <span className="font-mono font-bold">- {Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
                             </div>
                         )}
                         
                         {isScreenBroken && (
-                            <div className="flex justify-between text-red-400 py-1 border-b border-white/5">
-                                <span>- {t('screenLoss')}</span>
-                                <span className="font-mono">- {selectedModel.screenPrice}</span>
+                            <div className="flex justify-between items-center text-red-600 py-2 border-b border-slate-50">
+                                <span className="flex items-center gap-2 font-medium">
+                                    <Smartphone className="h-3.5 w-3.5" />
+                                    {t('screenLoss')}
+                                </span>
+                                <span className="font-mono font-bold">- {selectedModel.screenPrice}</span>
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-auto relative z-10 pt-4 shrink-0">
-                        <button className="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 flex items-center justify-center gap-2 group transition-all">
+                    <div className="mt-auto relative z-10 pt-6 shrink-0">
+                        <button className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 group transition-all duration-200">
                             <span className="group-hover:hidden">{t('confirmDeal')}</span>
                             <span className="hidden group-hover:inline flex items-center gap-2">
                                 <Printer className="h-5 w-5" /> {t('printReceipt')}
