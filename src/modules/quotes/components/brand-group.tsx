@@ -9,19 +9,27 @@ import type { ModelItem } from "../types";
 interface BrandGroupProps {
   brand: string;
   items: ModelItem[];
-  isAuditMode: boolean;
   expandedCards: Set<string>;
   onRepairUpdate: (brand: string, model: string, rIdx: number, price: number, warranty: string) => void;
-  globalMIdx: number;
+  onDeleteModel?: (brand: string, model: string) => void;
+  onDeleteRepair?: (brand: string, model: string, repairId: string) => void;
+  onDeleteBrand?: (brand: string) => void;
+  onRenameModel?: (brand: string, oldModel: string, newModel: string) => void;
+  onRenameBrand?: (oldBrand: string, newBrand: string) => void;
+  onAddRepair?: (brand: string, model: string) => void;
 }
 
 export function BrandGroup({ 
   brand, 
   items, 
-  isAuditMode, 
   expandedCards,
   onRepairUpdate,
-  globalMIdx 
+  onDeleteModel,
+  onDeleteRepair,
+  onDeleteBrand,
+  onRenameModel,
+  onRenameBrand,
+  onAddRepair
 }: BrandGroupProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [logoError, setLogoError] = useState(false);
@@ -30,9 +38,7 @@ export function BrandGroup({
   
   // Count stats
   const totalModels = items.length;
-  const totalRepairs = items.reduce((sum, item) => sum + item.repairs.length, 0);
-  const hasErrors = items.some(item => item.hasError);
-  const hasWarnings = items.some(item => item.hasWarning);
+  const totalRepairs = items.reduce((sum, item) => sum + (item.repairs?.length || 0), 0);
 
   // Brand color mapping
   const brandColors: Record<string, string> = {
@@ -89,16 +95,7 @@ export function BrandGroup({
         </div>
 
         <div className="flex items-center gap-2">
-          {isAuditMode && hasErrors && (
-            <span className="px-2 py-1 rounded-full bg-red-500 text-white text-xs font-bold">
-              有错误
-            </span>
-          )}
-          {isAuditMode && hasWarnings && !hasErrors && (
-            <span className="px-2 py-1 rounded-full bg-yellow-500 text-white text-xs font-bold">
-              有警告
-            </span>
-          )}
+          {/* Audit status badges removed */}
         </div>
       </div>
 
@@ -109,11 +106,14 @@ export function BrandGroup({
             <ModelCard
               key={`${item.brand}-${item.model}`}
               item={item}
-              mIdx={globalMIdx + idx}
-              isAuditMode={isAuditMode}
+              mIdx={idx}
               onRepairUpdate={(mIdx, rIdx, price, warranty) => {
                 onRepairUpdate(item.brand, item.model, rIdx, price, warranty);
               }}
+              onDeleteModel={onDeleteModel}
+              onDeleteRepair={onDeleteRepair}
+              onRenameModel={onRenameModel}
+              onAddRepair={onAddRepair}
               expanded={expandedCards.has(`${item.brand}-${item.model}`)}
             />
           ))}

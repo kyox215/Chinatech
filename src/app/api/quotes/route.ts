@@ -111,28 +111,42 @@ export async function POST(request: Request) {
       const result = await db.$transaction(async (tx) => {
         // Delete all if replaceAll is true
         if (replaceAll) {
+          console.log("Deleting all existing quotes...");
           await tx.quote.deleteMany({});
-          
-          // Use createMany for performance
-          const insertResult = await tx.quote.createMany({
-            data: validItems.map(item => ({
-              brand: item.brand,
-              model: item.model,
-              repairId: item.repair_id,
-              repairLabel: item.repair_label,
-              repairType: item.repair_type,
-              quality: item.quality,
-              price: item.price,
-              warranty: item.warranty,
-              count: item.count,
-              isUnstable: item.is_unstable,
-              priceSpread: item.price_spread,
-            })),
-            skipDuplicates: true 
-          });
-          return { count: insertResult.count, operation: 'replace' };
+        }
+
+        // Chunk size for batch processing
+        const CHUNK_SIZE = 1000; 
+        let totalInserted = 0;
+        
+        if (replaceAll) {
+           // Batch insert
+           for (let i = 0; i < validItems.length; i += CHUNK_SIZE) {
+             const chunk = validItems.slice(i, i + CHUNK_SIZE);
+             console.log(`Inserting chunk ${i/CHUNK_SIZE + 1} (${chunk.length} items)...`);
+             
+             const insertResult = await tx.quote.createMany({
+               data: chunk.map(item => ({
+                 brand: item.brand,
+                 model: item.model,
+                 repairId: item.repair_id,
+                 repairLabel: item.repair_label,
+                 repairType: item.repair_type,
+                 quality: item.quality,
+                 price: item.price,
+                 warranty: item.warranty,
+                 count: item.count,
+                 isUnstable: item.is_unstable,
+                 priceSpread: item.price_spread,
+               })),
+               skipDuplicates: true 
+             });
+             totalInserted += insertResult.count;
+           }
+           return { count: totalInserted, operation: 'replace' };
         } else {
           // Upsert loop for non-replace bulk (slower but safer for updates)
+          // Also chunk this to avoid memory issues if array is huge
           const upserted = [];
           for (const item of validItems) {
             const record = await tx.quote.upsert({
@@ -167,6 +181,9 @@ export async function POST(request: Request) {
           }
           return { count: upserted.length, operation: 'upsert', data: upserted.map(toApiResponse) };
         }
+      }, {
+        maxWait: 10000, // 10s max wait
+        timeout: 20000  // 20s timeout
       });
       
       return NextResponse.json(result);
@@ -191,9 +208,16 @@ export async function POST(request: Request) {
       
       return NextResponse.json(toApiResponse(record));
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST /api/quotes Error:", error);
-    return NextResponse.json({ error: "Database operation failed", details: (error as Error).message }, { status: 500 });
+    // Enhanced error logging
+    const errorDetails = {
+      message: error.message,
+      code: error.code,
+      meta: error.meta,
+      stack: error.stack
+    };
+    return NextResponse.json({ error: "Database operation failed", details: errorDetails }, { status: 500 });
   }
 }
 

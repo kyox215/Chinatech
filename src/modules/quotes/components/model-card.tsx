@@ -3,14 +3,13 @@
 import React from "react"
 
 import { useState, useEffect } from "react";
-import { ChevronDown, Pen, Check, X, AlertCircle, XCircle, AlertTriangle, Trash2, Edit3, Plus } from "lucide-react";
+import { ChevronDown, Pen, Check, X, Trash2, Edit3, Plus } from "lucide-react";
 import { getBrandInfo } from "../utils";
 import type { ModelItem, Repair } from "../types";
 
 interface ModelCardProps {
   item: ModelItem;
   mIdx: number;
-  isAuditMode: boolean;
   onRepairUpdate: (mIdx: number, rIdx: number, price: number, warranty: string) => void;
   onDeleteModel?: (brand: string, model: string) => void;
   onDeleteRepair?: (brand: string, model: string, repairId: string) => void;
@@ -19,7 +18,7 @@ interface ModelCardProps {
   expanded?: boolean;
 }
 
-export function ModelCard({ item, mIdx, isAuditMode, onRepairUpdate, onDeleteModel, onDeleteRepair, onRenameModel, onAddRepair, expanded }: ModelCardProps) {
+export function ModelCard({ item, mIdx, onRepairUpdate, onDeleteModel, onDeleteRepair, onRenameModel, onAddRepair, expanded }: ModelCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editPrice, setEditPrice] = useState("");
@@ -40,9 +39,7 @@ export function ModelCard({ item, mIdx, isAuditMode, onRepairUpdate, onDeleteMod
   const hasScreenRepair = item.repairs.some(r => r.type === 'screen');
   const hasBatteryRepair = item.repairs.some(r => r.type === 'battery');
 
-  let cardClass = `model-card bg-white rounded-lg border border-slate-200 overflow-hidden fade-in card-brand-${item.brand}`;
-  if (isAuditMode && item.hasError) cardClass += " has-error";
-  else if (isAuditMode && item.hasWarning) cardClass += " has-warning";
+  const cardClass = `model-card bg-white rounded-lg border border-slate-200 overflow-hidden fade-in card-brand-${item.brand}`;
 
   const handleStartEdit = (rIdx: number, repair: Repair) => {
     setEditingIdx(rIdx);
@@ -138,9 +135,6 @@ export function ModelCard({ item, mIdx, isAuditMode, onRepairUpdate, onDeleteMod
               )}
               {!isRenamingModel && hasScreenRepair && <span className="badge badge-screen ml-2">屏幕</span>}
               {!isRenamingModel && hasBatteryRepair && <span className="badge badge-battery ml-2">电池</span>}
-              {!isRenamingModel && isAuditMode && item.hasError && (
-                <AlertCircle className="w-4 h-4 text-red-500 ml-2 animate-pulse" />
-              )}
             </h3>
             <span className="text-xs text-slate-400 font-mono">{item.brand}</span>
           </div>
@@ -187,7 +181,6 @@ export function ModelCard({ item, mIdx, isAuditMode, onRepairUpdate, onDeleteMod
                 key={repair.id}
                 repair={repair}
                 isEditing={editingIdx === rIdx}
-                isAuditMode={isAuditMode}
                 editPrice={editPrice}
                 editWarranty={editWarranty}
                 onEditPriceChange={setEditPrice}
@@ -208,7 +201,6 @@ export function ModelCard({ item, mIdx, isAuditMode, onRepairUpdate, onDeleteMod
 interface RepairRowProps {
   repair: Repair;
   isEditing: boolean;
-  isAuditMode: boolean;
   editPrice: string;
   editWarranty: string;
   onEditPriceChange: (val: string) => void;
@@ -222,7 +214,6 @@ interface RepairRowProps {
 function RepairRow({
   repair,
   isEditing,
-  isAuditMode,
   editPrice,
   editWarranty,
   onEditPriceChange,
@@ -239,23 +230,10 @@ function RepairRow({
     return null;
   };
 
-  const renderIssues = () => {
-    if (!isAuditMode || !repair.issues || repair.issues.length === 0) return null;
-    return repair.issues.map((issue, idx) => (
-      <span
-        key={idx}
-        className={`error-tag ${issue.type === 'red' ? 'tag-red' : 'tag-yellow'}`}
-      >
-        {issue.type === 'red' ? <XCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-        {issue.msg}
-      </span>
-    ));
-  };
-
   return (
     <div className="grid grid-cols-12 gap-2 p-3 border-b border-slate-100 last:border-0 items-center text-sm hover:bg-white transition group">
       <div className="col-span-5 font-medium text-slate-700 flex flex-wrap gap-2 items-center">
-        {repair.label} {renderQualityBadge()} {renderIssues()}
+        {repair.label} {renderQualityBadge()}
       </div>
       <div className="col-span-3 text-right">
         {isEditing ? (

@@ -137,7 +137,6 @@ const seriesOrder: Record<string, string[]> = {
 interface BrandGridProps {
   groupedByBrand: Record<string, ModelItem[]>;
   sortedBrands: string[];
-  isAuditMode: boolean;
   expandedCards: Set<string>;
   onRepairUpdate: (brand: string, model: string, rIdx: number, price: number, warranty: string) => void;
   onDeleteModel?: (brand: string, model: string) => void;
@@ -207,7 +206,6 @@ const defaultStyle = {
 export function BrandGrid({ 
   groupedByBrand, 
   sortedBrands, 
-  isAuditMode, 
   expandedCards,
   onRepairUpdate,
   onDeleteModel,
@@ -282,8 +280,6 @@ export function BrandGrid({
     const style = brandStyles[brand] || defaultStyle;
     const totalModels = items.length;
     const totalRepairs = items.reduce((sum, item) => sum + (item.repairs?.length || 0), 0);
-    const hasErrors = items.some(item => item.hasError);
-    const hasWarnings = items.some(item => item.hasWarning);
     const isSelected = selectedBrand === brand;
 
     return (
@@ -299,17 +295,6 @@ export function BrandGrid({
           }
         `}
       >
-        {/* Status badges */}
-        {isAuditMode && (hasErrors || hasWarnings) && (
-          <div className="absolute top-2 right-2">
-            {hasErrors ? (
-              <AlertCircle className="w-5 h-5 text-red-300 animate-pulse" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 text-yellow-300" />
-            )}
-          </div>
-        )}
-
         {/* Brand Logo */}
         <div className="flex justify-center mb-3">
           {brandInfo.icon && !logoErrors.has(brand) ? (
@@ -482,7 +467,6 @@ export function BrandGrid({
   key={`${item.brand}-${item.model}`}
   item={item}
   mIdx={idx}
-  isAuditMode={isAuditMode}
   onRepairUpdate={(mIdx, rIdx, price, warranty) => {
     onRepairUpdate(item.brand, item.model, rIdx, price, warranty);
   }}

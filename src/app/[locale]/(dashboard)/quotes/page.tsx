@@ -8,7 +8,7 @@ import { BrandGrid } from "@/modules/quotes/components/brand-grid";
 import { EmptyState } from "@/modules/quotes/components/empty-state";
 import { AddModelDialog, AddRepairDialog, AddBrandDialog } from "@/modules/quotes/components/add-dialog";
 import { BrandManager } from "@/modules/quotes/components/brand-manager";
-import { processCSV, analyzeErrors, exportToCSV, convertToDbRecords, convertFromDbRecords } from "@/modules/quotes/utils";
+import { processCSV, exportToCSV, convertToDbRecords, convertFromDbRecords } from "@/modules/quotes/utils";
 import type { BrandType, ModelItem, QuoteRecord } from "@/modules/quotes/types";
 import { PageShell } from "@/modules/shared/PageShell";
 
@@ -18,8 +18,6 @@ export default function QuoteManagementPage() {
   const [appData, setAppData] = useState<ModelItem[]>([]);
   const [currentBrand, setCurrentBrand] = useState<BrandType>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAuditMode, setIsAuditMode] = useState(false);
-  const [auditCount, setAuditCount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [showAddModelDialog, setShowAddModelDialog] = useState(false);
@@ -110,8 +108,6 @@ export default function QuoteManagementPage() {
       complete: async (results) => {
         const data = processCSV(results.data as Record<string, string>[]);
         setAppData(data);
-        setIsAuditMode(false);
-        setAuditCount(0);
         setHasLoadedFromDb(true); // Mark as loaded to prevent overwrite from DB
         // Save newly imported data to database (replace all existing data)
         await saveToDatabase(data, true);
@@ -119,26 +115,6 @@ export default function QuoteManagementPage() {
       error: (err: Error) => alert("CSV 解析失败: " + err.message),
     });
   }, []);
-
-  const handleAuditToggle = useCallback(() => {
-    if (isAuditMode) {
-      // Exit audit mode - clear issues
-      setIsAuditMode(false);
-      setAuditCount(0);
-      setAppData(prev => prev.map(m => ({
-        ...m,
-        hasError: false,
-        hasWarning: false,
-        repairs: m.repairs.map(r => ({ ...r, issues: [] }))
-      })));
-    } else {
-      // Enter audit mode - analyze errors
-      const { data: analyzedData, totalIssues } = analyzeErrors(appData);
-      setAppData(analyzedData);
-      setAuditCount(totalIssues);
-      setIsAuditMode(true);
-    }
-  }, [isAuditMode, appData]);
 
   const handleExport = useCallback(() => {
     exportToCSV(appData, currentBrand);
@@ -365,14 +341,11 @@ export default function QuoteManagementPage() {
       <div className="space-y-6">
         <Header
           hasData={appData.length > 0}
-          isAuditMode={isAuditMode}
-          auditCount={auditCount}
           currentBrand={currentBrand}
           searchQuery={searchQuery}
           isSaving={isSaving}
           isLoading={isLoading}
           onFileImport={handleFileImport}
-          onAuditToggle={handleAuditToggle}
           onExport={handleExport}
           onSave={() => saveToDatabase(appData)}
           onAddModel={() => setShowAddModelDialog(true)}
@@ -389,7 +362,6 @@ export default function QuoteManagementPage() {
           <BrandGrid
             groupedByBrand={groupedByBrand}
             sortedBrands={sortedBrands}
-            isAuditMode={isAuditMode}
             expandedCards={expandedCards}
             onRepairUpdate={handleRepairUpdate}
             onDeleteModel={handleDeleteModel}

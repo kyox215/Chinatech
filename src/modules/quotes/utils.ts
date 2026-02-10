@@ -783,51 +783,6 @@ export function processCSV(data: Record<string, string>[]): ModelItem[] {
   return sortModelsByYear(appData);
 }
 
-export function analyzeErrors(data: ModelItem[]): { data: ModelItem[]; totalIssues: number } {
-  let totalIssues = 0;
-  
-  const analyzedData = data.map(m => {
-    let modelHasError = false;
-    let modelHasWarning = false;
-
-    const getPrice = (type: string, qual: string) => {
-      const r = m.repairs.find(x => x.type === type && x.quality === qual);
-      return r ? r.price : null;
-    };
-
-    const origScreenPrice = getPrice('screen', 'orig');
-    const compScreenPrice = getPrice('screen', 'comp');
-
-    const repairs = m.repairs.map(r => {
-      const issues: { type: 'red' | 'yellow'; msg: string }[] = [];
-      
-      if (r.type === 'screen' && r.quality === 'orig' && compScreenPrice && r.price < compScreenPrice) {
-        issues.push({ type: 'red', msg: '原装比组装便宜' }); modelHasError = true; totalIssues++;
-      }
-      if (r.type === 'screen' && r.quality === 'comp' && origScreenPrice && r.price > origScreenPrice) {
-        issues.push({ type: 'red', msg: '组装比原装贵' }); modelHasError = true; totalIssues++;
-      }
-      if (r.price === 0) {
-        issues.push({ type: 'red', msg: '价格为0' }); modelHasError = true; totalIssues++;
-      } else if (r.price < 10) {
-        issues.push({ type: 'yellow', msg: '价格过低' }); modelHasWarning = true; totalIssues++;
-      }
-      if (r.price > 20 && (!r.warranty || r.warranty === 'N/A' || r.warranty === '')) {
-        issues.push({ type: 'yellow', msg: '缺保修信息' }); modelHasWarning = true; totalIssues++;
-      }
-      if (r.isUnstable) {
-        issues.push({ type: 'yellow', msg: `历史波动大 (${r.priceSpread})` }); modelHasWarning = true; totalIssues++;
-      }
-      
-      return { ...r, issues };
-    });
-
-    return { ...m, repairs, hasError: modelHasError, hasWarning: modelHasWarning };
-  });
-
-  return { data: analyzedData, totalIssues };
-}
-
 export function exportToCSV(data: ModelItem[], currentBrand: string): void {
   const csvRows = [['Brand', 'Model', 'Repair Item', 'Quality', 'Price', 'Warranty']];
   data.forEach(m => {

@@ -1,8 +1,3 @@
-export interface Issue {
-  type: 'red' | 'yellow';
-  msg: string;
-}
-
 export interface Repair {
   id: string;
   label: string;
@@ -13,15 +8,12 @@ export interface Repair {
   count: number;
   isUnstable?: boolean;
   priceSpread?: string;
-  issues?: Issue[];
 }
 
 export interface ModelItem {
   brand: string;
   model: string;
   repairs: Repair[];
-  hasError?: boolean;
-  hasWarning?: boolean;
 }
 
 export type BrandType = 'all' | 'APPLE' | 'SAMSUNG' | 'XIAOMI' | 'OPPO' | 'HUAWEI' | 'HONOR' | 'REALME' | 'VIVO' | 'ONEPLUS';
