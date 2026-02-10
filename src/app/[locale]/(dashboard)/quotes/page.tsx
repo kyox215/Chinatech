@@ -294,10 +294,11 @@ export default function QuoteManagementPage() {
         repairs: repairs.map(r => ({
           id: Math.random().toString(36).substr(2, 9),
           label: r.label,
-          type: r.type,
-          quality: r.quality,
+          type: r.type as 'screen' | 'battery' | 'other',
+          quality: r.quality as 'orig' | 'comp' | 'altcap' | 'standard',
           price: r.price,
           warranty: r.warranty,
+          count: 0,
         })),
       };
       setAppData(prev => [...prev, newModel]);
@@ -338,10 +339,11 @@ export default function QuoteManagementPage() {
             repairs: [...item.repairs, {
               id: record.repair_id,
               label: repair.label,
-              type: repair.type,
-              quality: repair.quality,
+              type: repair.type as 'screen' | 'battery' | 'other',
+              quality: repair.quality as 'orig' | 'comp' | 'altcap' | 'standard',
               price: repair.price,
               warranty: repair.warranty,
+              count: 0,
             }],
           };
         }
