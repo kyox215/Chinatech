@@ -9,14 +9,21 @@ import { PhoneModel } from './types';
 import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `HTTP Error ${res.status}`);
+  }
+  return res.json();
+};
 
 export function RecycleCalculator() {
   const t = useTranslations("Recycling");
 
   // Data Fetching
   const { data: apiData, error, isLoading } = useSWR<PhoneModel[]>('/api/recycling', fetcher);
-  const data = apiData || [];
+  const data = Array.isArray(apiData) ? apiData : [];
 
   // Selections
   const [selectedModel, setSelectedModel] = React.useState<PhoneModel | null>(null);
