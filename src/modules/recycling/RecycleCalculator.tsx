@@ -42,6 +42,7 @@ export function RecycleCalculator() {
 
   const [selectedCondition, setSelectedCondition] = React.useState(conditionGrades[0]);
   const [selectedBattery, setSelectedBattery] = React.useState(batteryLevels[0]);
+  const [isMobilePanelExpanded, setIsMobilePanelExpanded] = React.useState(false);
 
   // Initial Data Load
   React.useEffect(() => {
@@ -178,7 +179,79 @@ export function RecycleCalculator() {
   return (
     <div className="max-w-6xl mx-auto font-sans text-slate-800 animate-in fade-in duration-500">
         
-        <div className="grid lg:grid-cols-12 gap-6 p-4 pt-4 lg:pt-4">
+        {/* Mobile Sticky Price Panel */}
+        <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900 text-white shadow-2xl border-b border-white/10">
+            <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        {t('finalPriceTitle')}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-bold font-mono tracking-tighter">€{finalQuote}</span>
+                        <div className="flex items-center gap-1 bg-white/10 px-1.5 py-0.5 rounded text-[10px] backdrop-blur-sm">
+                            <span className="text-yellow-400 font-mono font-bold">€{nextMonthPrice}</span>
+                            <span className="text-red-400 animate-pulse">↓</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="flex gap-2">
+                     <button 
+                        onClick={() => setIsMobilePanelExpanded(!isMobilePanelExpanded)}
+                        className="p-2.5 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors border border-white/5 active:scale-95"
+                        aria-label="Toggle details"
+                    >
+                       {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5 text-slate-300" /> : <ChevronDown className="h-5 w-5 text-slate-300" />}
+                    </button>
+                    <button className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-green-900/20 active:scale-95 flex items-center gap-2 transition-all">
+                        <Printer className="h-4 w-4" />
+                        <span>{t('confirmDeal')}</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Expanded Details */}
+            {isMobilePanelExpanded && (
+                <div className="px-4 pb-6 bg-slate-900 border-t border-white/10 max-h-[50vh] overflow-y-auto shadow-inner animate-in slide-in-from-top-2">
+                     <div className="space-y-3 pt-4 text-xs max-w-6xl mx-auto">
+                        <div className="flex justify-between items-center opacity-80 py-2 border-b border-white/5">
+                            <span className="font-medium text-slate-300">{t('basePrice')}</span>
+                            <span className="font-mono font-bold text-white text-sm">€ {basePrice}</span>
+                        </div>
+                        
+                        {depreciationCost > 0 && (
+                            <div className="flex justify-between items-center text-red-300 py-2 border-b border-white/5 bg-red-500/5 px-2 -mx-2 rounded">
+                                <span className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" /> {t('depreciationLoss')} ({holdDays}d)</span>
+                                <span className="font-mono font-bold">- €{depreciationCost}</span>
+                            </div>
+                        )}
+                        
+                        {selectedBattery?.value > 0 && (
+                            <div className="flex justify-between items-center text-blue-300 py-2 border-b border-white/5">
+                                <span className="flex items-center gap-1.5"><Battery className="h-3 w-3" /> {t('batteryLoss')}</span>
+                                <span className="font-mono font-bold">- €{selectedBattery.type === 'percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel.batteryPrice}</span>
+                            </div>
+                        )}
+                        
+                        {selectedCondition?.deductionPercent > 0 && (
+                            <div className="flex justify-between items-center text-yellow-300 py-2 border-b border-white/5">
+                                <span className="flex items-center gap-1.5"><ShieldAlert className="h-3 w-3" /> {t('conditionLoss')} ({selectedCondition.id})</span>
+                                <span className="font-mono font-bold">- €{Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
+                            </div>
+                        )}
+                        
+                        {isScreenBroken && (
+                            <div className="flex justify-between items-center text-red-400 py-2 border-b border-white/5">
+                                <span className="flex items-center gap-1.5"><Smartphone className="h-3 w-3" /> {t('screenLoss')}</span>
+                                <span className="font-mono font-bold">- €{selectedModel.screenPrice}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+
+        <div className="grid lg:grid-cols-12 gap-6 p-4 pt-[100px] lg:pt-4">
             
             {/* Left Configuration Area */}
             <div className="lg:col-span-8 flex flex-col gap-4">
