@@ -180,7 +180,7 @@ export function RecycleCalculator() {
     <div className="max-w-6xl mx-auto font-sans text-slate-800 animate-in fade-in duration-500">
         
         {/* Mobile Sticky Price Panel */}
-        <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200 transition-all duration-300">
+        <div className="lg:hidden fixed top-16 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200 transition-all duration-300">
             <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
                 {/* Left: Price Info - Flexible width with min-width constraint */}
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4 justify-center">
@@ -411,7 +411,7 @@ export function RecycleCalculator() {
             <div className="hidden lg:flex lg:col-span-4 flex-col order-last z-30">
                 <div className="bg-white text-slate-900 rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-xl border border-slate-200 sticky top-24 max-h-[calc(100vh-8rem)] transition-all duration-300 hover:shadow-2xl">
                     
-                    <div className="mt-2 text-center border-b border-slate-100 pb-6 relative z-10 shrink-0">
+                    <div className="text-center border-b border-slate-100 pb-6 relative z-10 shrink-0">
                         <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('finalPriceTitle')}</div>
                         <div className="flex items-center justify-center">
                             <span className="text-3xl font-bold mr-1 text-slate-900">€</span>
