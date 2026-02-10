@@ -4,18 +4,29 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import useSWR from 'swr';
-import { storageTiers, currentYear } from './data';
 import { PhoneModel } from './types';
 import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { initialCsvData, parseCSV, storageTiers, currentYear } from './data';
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP Error ${res.status}`);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      // If DB error, fallback to static data
+      if (res.status === 500 && errorData.error?.includes("Can't reach database server")) {
+        console.warn("Database connection failed, falling back to static data.");
+        return parseCSV(initialCsvData);
+      }
+      throw new Error(errorData.error || `HTTP Error ${res.status}`);
+    }
+    return res.json();
+  } catch (error) {
+    console.warn("Fetch failed, falling back to static data:", error);
+    // Fallback to static CSV data if API fails completely (e.g. network error)
+    return parseCSV(initialCsvData);
   }
-  return res.json();
 };
 
 export function RecycleCalculator() {
