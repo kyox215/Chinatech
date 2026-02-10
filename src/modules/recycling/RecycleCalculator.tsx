@@ -185,16 +185,32 @@ export function RecycleCalculator() {
                 
                 {/* 1. Model */}
                 <div className="bg-white/98 border border-black/5 shadow-sm p-6 rounded-xl relative overflow-hidden">
+                    {/* Header: Title + Trend */}
                     <div className="flex justify-between items-center mb-4 relative z-10">
                         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('configTitle')}</h3>
-                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                        
+                        {/* Trend Label */}
+                        <div className={cn(
+                            "px-3 py-1 text-[10px] font-bold uppercase rounded-full",
+                            depInfo.color.replace('text-', 'bg-').replace('600', '100'),
+                            depInfo.color
+                        )}>
+                            {t('marketTrend')}: {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%/mo)
+                        </div>
+                    </div>
+
+                    {/* Storage Selection */}
+                    <div className="mb-4 relative z-10">
+                        <div className="inline-flex bg-white border border-slate-200 p-1 rounded-lg shadow-sm">
                             {storageTiers.map((tier) => (
                                 <button 
                                     key={tier.label} 
                                     onClick={() => setSelectedStorage(tier)} 
                                     className={cn(
-                                        "px-3 py-1 text-xs font-bold rounded-md transition-all",
-                                        selectedStorage.value === tier.value ? 'bg-white text-black shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                                        "px-4 py-2 text-sm font-bold rounded-md transition-all",
+                                        selectedStorage.value === tier.value 
+                                            ? 'bg-slate-900 text-white shadow-sm' 
+                                            : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                                     )}
                                 >
                                     {tier.label.split('/')[0]}
@@ -202,8 +218,9 @@ export function RecycleCalculator() {
                             ))}
                         </div>
                     </div>
+
                     <select 
-                        className="w-full p-3 text-xl font-bold bg-white border border-slate-200 rounded-xl outline-none appearance-none relative z-10" 
+                        className="w-full p-4 text-xl font-bold bg-slate-50 border border-slate-200 rounded-xl outline-none appearance-none relative z-10 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
                         onChange={(e) => {
                             const model = data.find(m => m.model === e.target.value);
                             if(model) setSelectedModel(model);
@@ -212,14 +229,6 @@ export function RecycleCalculator() {
                     >
                         {data.map(m => <option key={m.model} value={m.model}>{m.model}</option>)}
                     </select>
-                    
-                    {/* Trend Label */}
-                    <div className={cn(
-                        "absolute top-0 right-0 px-4 py-2 text-[10px] font-bold uppercase rounded-bl-xl z-0 bg-slate-50",
-                        depInfo.color
-                    )}>
-                        {t('marketTrend')}: {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%/mo)
-                    </div>
                 </div>
 
                 {/* 4. Risk Control (New Core Feature) */}
