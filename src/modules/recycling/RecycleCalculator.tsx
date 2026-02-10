@@ -135,7 +135,9 @@ export function RecycleCalculator() {
   const depreciationCost = calcDepreciationCost();
   const nextMonthPrice = Math.floor(finalQuote * (1 - depInfo.monthlyRate));
 
-  if (!selectedModel) return <div>Loading...</div>;
+  if (error) return <div className="p-4 text-red-500">Error loading data: {error.message}</div>;
+  if (isLoading) return <div className="p-4">Loading recycling data...</div>;
+  if (!selectedModel) return <div className="p-4">No data available. Please check database connection.</div>;
 
   return (
     <div className="grid lg:grid-cols-12 gap-6 animate-in fade-in duration-500">

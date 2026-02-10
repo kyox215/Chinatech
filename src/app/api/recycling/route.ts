@@ -13,19 +13,15 @@ export async function GET() {
       console.log("Seeding recycling database...");
       const parsedData = parseCSV(initialCsvData);
       
-      await db.$transaction(
-        parsedData.map(item => 
-          db.recycleModel.create({
-            data: {
-              model: item.model,
-              screenPrice: item.screenPrice,
-              batteryPrice: item.batteryPrice,
-              baseRecyclePrice: item.baseRecyclePrice,
-              releaseYear: item.releaseYear,
-            }
-          })
-        )
-      );
+      await db.recycleModel.createMany({
+        data: parsedData.map(item => ({
+          model: item.model,
+          screenPrice: item.screenPrice,
+          batteryPrice: item.batteryPrice,
+          baseRecyclePrice: item.baseRecyclePrice,
+          releaseYear: item.releaseYear,
+        }))
+      });
       
       models = await db.recycleModel.findMany({
         orderBy: { releaseYear: 'desc' },
@@ -34,6 +30,7 @@ export async function GET() {
     
     return NextResponse.json(models);
   } catch (error) {
+    console.error("GET /api/recycling error:", error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

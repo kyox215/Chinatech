@@ -8,7 +8,10 @@ declare global {
 
 const connectionString = process.env.DATABASE_URL;
 
-const pool = new Pool({ connectionString });
+const pool = new Pool({ 
+  connectionString: connectionString ? connectionString.replace("sslmode=require", "") : undefined,
+  ssl: process.env.NODE_ENV === "production" ? true : { rejectUnauthorized: false },
+});
 const adapter = new PrismaPg(pool);
 
 export const db = globalThis.prisma || new PrismaClient({ adapter });
