@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import useSWR from 'swr';
-import { 
+import {
   PhoneModel, 
   currentYear, 
   storageTiers 
 } from './data';
+import { calculateValuation, getDepreciationInfo } from './logic';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -69,71 +70,21 @@ export function RecycleCalculator() {
   }, [t, conditionGrades, batteryLevels]);
 
 
-  // Logic
-  const getDepreciationInfo = () => {
-    if (!selectedModel) return { monthlyRate: 0, label: t('stableDrop'), color: "text-slate-400", bg: "bg-slate-100" };
+  const valuation = React.useMemo(() => {
+    if (!selectedModel) return { finalPrice: 0, basePrice: 0, deductions: { condition: 0, battery: 0, screen: 0, depreciation: 0 }, nextMonthPrice: 0, depreciationInfo: { monthlyRate: 0, label: 'stableDrop', color: "", bg: "" } };
     
-    const age = currentYear - selectedModel.releaseYear;
-    
-    let monthlyRate = 0.015;
-    let label = t('stableDrop');
-    let color = "text-yellow-600";
-    let bg = "bg-yellow-100";
+    return calculateValuation({
+      model: selectedModel,
+      storageValue: selectedStorage.value,
+      conditionDeduction: selectedCondition.deductionPercent,
+      batteryType: selectedBattery.type as 'percent' | 'fixed',
+      batteryValue: selectedBattery.value,
+      isScreenBroken,
+      holdDays
+    });
+  }, [selectedModel, selectedStorage, selectedCondition, selectedBattery, isScreenBroken, holdDays]);
 
-    if (age <= 1) { 
-        monthlyRate = 0.025; 
-        label = t('fastDrop');
-        color = "text-red-600";
-        bg = "bg-red-100";
-    } else if (age >= 3) {
-        monthlyRate = 0.010; 
-        label = t('slowDrop');
-        color = "text-green-600";
-        bg = "bg-green-100";
-    }
-
-    return { monthlyRate, label, color, bg };
-  };
-
-  const calculateQuote = () => {
-    if (!selectedModel) return 0;
-    
-    // 1. Base
-    let price = selectedModel.baseRecyclePrice + selectedStorage.value;
-    const baseForCalc = price;
-
-    // 2. Condition
-    price -= baseForCalc * selectedCondition.deductionPercent;
-
-    // 3. Battery
-    if (selectedBattery.type === 'percent') {
-        price -= baseForCalc * selectedBattery.value;
-    } else {
-        price -= selectedModel.batteryPrice;
-    }
-
-    // 4. Screen
-    if (isScreenBroken) price -= selectedModel.screenPrice;
-
-    // 5. Depreciation
-    const { monthlyRate } = getDepreciationInfo();
-    const depreciationAmount = price * (monthlyRate / 30 * holdDays);
-    price -= depreciationAmount;
-
-    return price < 10 ? 10 : Math.floor(price);
-  };
-
-  const finalQuote = calculateQuote();
-  const basePrice = selectedModel ? (selectedModel.baseRecyclePrice + selectedStorage.value) : 0;
-  const depInfo = getDepreciationInfo();
-
-  const calcDepreciationCost = () => {
-      if (!selectedModel) return 0;
-      const tempPrice = basePrice * (1 - selectedCondition.deductionPercent); 
-      return Math.floor(tempPrice * (depInfo.monthlyRate / 30 * holdDays));
-  };
-  const depreciationCost = calcDepreciationCost();
-  const nextMonthPrice = Math.floor(finalQuote * (1 - depInfo.monthlyRate));
+  const { finalPrice, basePrice, deductions, nextMonthPrice, depreciationInfo } = valuation;
 
   if (error) return <div className="p-4 text-red-500">Error loading data: {error.message}</div>;
   if (isLoading) return <div className="p-4">Loading recycling data...</div>;
@@ -149,8 +100,8 @@ export function RecycleCalculator() {
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
              <CardTitle className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t('configTitle')}</CardTitle>
-             <Badge variant="outline" className={`${depInfo.bg} ${depInfo.color} border-0 font-bold`}>
-                {t('marketTrend')}: {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%/mo)
+             <Badge variant="outline" className={`${depreciationInfo.bg} ${depreciationInfo.color} border-0 font-bold`}>
+                {t('marketTrend')}: {t(depreciationInfo.label)} (-{(depreciationInfo.monthlyRate*100).toFixed(1)}%/mo)
              </Badge>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -211,12 +162,12 @@ export function RecycleCalculator() {
                     <span>60 {t('days')} (Slow)</span>
                  </div>
 
-                 {depreciationCost > 0 && (
+                 {deductions.depreciation > 0 && (
                     <div className="bg-red-50 p-3 rounded-lg flex justify-between items-center text-sm border border-red-100">
                         <span className="text-red-600 font-medium flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4" /> {t('depreciationLoss')}
                         </span>
-                        <span className="font-bold text-red-700 font-mono">- €{depreciationCost}</span>
+                        <span className="font-bold text-red-700 font-mono">- €{deductions.depreciation}</span>
                     </div>
                  )}
              </CardContent>
@@ -313,7 +264,7 @@ export function RecycleCalculator() {
                 <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('finalPriceTitle')}</div>
                 <div className="flex items-center justify-center">
                     <span className="text-4xl font-bold mr-2 text-emerald-400">€</span>
-                    <span className="text-8xl font-bold tracking-tighter leading-none">{finalQuote}</span>
+                    <span className="text-8xl font-bold tracking-tighter leading-none">{finalPrice}</span>
                 </div>
                 
                 <div className="mt-6 inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
@@ -329,31 +280,31 @@ export function RecycleCalculator() {
                     <span className="font-mono">€ {basePrice}</span>
                 </div>
                 
-                {depreciationCost > 0 && (
+                {deductions.depreciation > 0 && (
                     <div className="flex justify-between text-red-300 py-2 border-b border-white/5 bg-red-500/10 px-2 -mx-2 rounded">
                         <span>- {t('depreciationLoss')} ({holdDays}d)</span>
-                        <span className="font-mono">- {depreciationCost}</span>
+                        <span className="font-mono">- {deductions.depreciation}</span>
                     </div>
                 )}
                 
                 {(selectedBattery.value > 0 || selectedBattery.type === 'fixed') && (
                     <div className="flex justify-between text-blue-300 py-1 border-b border-white/5">
                         <span>- {t('batteryLoss')} ({selectedBattery.type === 'fixed' ? 'Fix' : '%'})</span>
-                        <span className="font-mono">- {selectedBattery.type === 'percent' ? Math.floor(basePrice * selectedBattery.value) : selectedModel.batteryPrice}</span>
+                        <span className="font-mono">- {deductions.battery}</span>
                     </div>
                 )}
                 
                 {selectedCondition.deductionPercent > 0 && (
                     <div className="flex justify-between text-yellow-300 py-1 border-b border-white/5">
                         <span>- {t('conditionLoss')} ({selectedCondition.id})</span>
-                        <span className="font-mono">- {Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
+                        <span className="font-mono">- {deductions.condition}</span>
                     </div>
                 )}
                 
                 {isScreenBroken && (
                     <div className="flex justify-between text-orange-300 py-1 border-b border-white/5">
                         <span>- {t('screenLoss')}</span>
-                        <span className="font-mono">- {selectedModel.screenPrice}</span>
+                        <span className="font-mono">- {deductions.screen}</span>
                     </div>
                 )}
             </div>
