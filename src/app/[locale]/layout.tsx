@@ -27,6 +27,17 @@ export default async function LocaleLayout({
   params: Promise<{locale: string}>;
 }) {
   const { locale } = await params;
+
+  // Validate locale
+  if (!['en', 'zh', 'it'].includes(locale)) {
+    return (
+      <html lang="en">
+        <body>
+          <div>Invalid locale</div>
+        </body>
+      </html>
+    );
+  }
   
   // Providing all messages to the client
   // side is the easiest way to get started
