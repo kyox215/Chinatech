@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { LayoutDashboard, Wrench, Package, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Repairs", href: "/repairs", icon: Wrench },
-  { name: "Inventory", href: "/inventory", icon: Package },
-  { name: "Settings", href: "/settings", icon: Settings },
-];
+import { useTranslations } from "next-intl";
 
 export function Sidebar() {
+  const t = useTranslations("Sidebar");
+
+  const navigation = [
+    { name: t("dashboard"), href: "/", icon: LayoutDashboard },
+    { name: t("repairs"), href: "/repairs", icon: Wrench },
+    { name: t("inventory"), href: "/inventory", icon: Package },
+    { name: t("settings"), href: "/settings", icon: Settings },
+  ];
+
   return (
     <div className="flex h-screen w-64 flex-col bg-slate-950 text-slate-50">
       <div className="flex h-16 items-center px-6">
@@ -42,7 +45,7 @@ export function Sidebar() {
       <div className="p-4 border-t border-slate-800">
         <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
           <LogOut className="h-5 w-5" />
-          Sign out
+          {t("signOut")}
         </button>
       </div>
     </div>

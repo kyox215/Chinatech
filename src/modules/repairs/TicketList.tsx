@@ -64,80 +64,93 @@ const data: Ticket[] = [
   },
 ]
 
-export const columns: ColumnDef<Ticket>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-    cell: ({ row }) => <span className="font-mono text-xs">{row.getValue("id")}</span>,
-  },
-  {
-    accessorKey: "customer",
-    header: "Customer",
-    cell: ({ row }) => <span className="font-medium text-slate-900">{row.getValue("customer")}</span>,
-  },
-  {
-    accessorKey: "device",
-    header: "Device",
-  },
-  {
-    accessorKey: "issue",
-    header: "Issue",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string
-      return (
-        <Badge 
-            variant={
-                status === "completed" ? "default" : 
-                status === "in_progress" ? "secondary" : 
-                "outline"
-            }
-            className={
-                status === "completed" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200" :
-                status === "in_progress" ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200" :
-                "bg-slate-100 text-slate-700 hover:bg-slate-100 border-slate-200"
-            }
-        >
-          {status.replace("_", " ")}
-        </Badge>
-      )
-    },
-  },
-  {
-    accessorKey: "price",
-    header: "Price",
-    cell: ({ row }) => <span className="font-mono text-slate-600">{row.getValue("price")}</span>,
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>
-                <Eye className="mr-2 h-4 w-4" /> View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" /> Edit Ticket
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
-]
+import { useTranslations } from "next-intl";
 
 export function TicketList() {
+  const t = useTranslations("Repairs");
+
+  // Since we cannot use hooks inside column definitions directly, 
+  // we can create columns inside the component or pass t function to a helper.
+  // For simplicity here, we'll redefine columns inside or wrap the table.
+  // However, react-table columns are usually static. 
+  // A common pattern is to use a custom cell renderer that uses hooks, 
+  // or pass the translation function as meta data.
+  // Let's refactor to allow translations in columns.
+
+  const columns: ColumnDef<Ticket>[] = [
+    {
+      accessorKey: "id",
+      header: t("table.id"),
+      cell: ({ row }) => <span className="font-mono text-xs">{row.getValue("id")}</span>,
+    },
+    {
+      accessorKey: "customer",
+      header: t("table.customer"),
+      cell: ({ row }) => <span className="font-medium text-slate-900">{row.getValue("customer")}</span>,
+    },
+    {
+      accessorKey: "device",
+      header: t("table.device"),
+    },
+    {
+      accessorKey: "issue",
+      header: t("table.issue"),
+    },
+    {
+      accessorKey: "status",
+      header: t("table.status"),
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string
+        return (
+          <Badge 
+              variant={
+                  status === "completed" ? "default" : 
+                  status === "in_progress" ? "secondary" : 
+                  "outline"
+              }
+              className={
+                  status === "completed" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200" :
+                  status === "in_progress" ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200" :
+                  "bg-slate-100 text-slate-700 hover:bg-slate-100 border-slate-200"
+              }
+          >
+            {t(`status.${status}`)}
+          </Badge>
+        )
+      },
+    },
+    {
+      accessorKey: "price",
+      header: t("table.price"),
+      cell: ({ row }) => <span className="font-mono text-slate-600">{row.getValue("price")}</span>,
+    },
+    {
+      id: "actions",
+      header: t("table.actions"),
+      cell: ({ row }) => {
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{t("table.actions")}</DropdownMenuLabel>
+              <DropdownMenuItem>
+                  <Eye className="mr-2 h-4 w-4" /> {t("table.viewDetails")}
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                  <Edit className="mr-2 h-4 w-4" /> {t("table.editTicket")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ];
+
   return (
     <DataTable columns={columns} data={data} searchKey="customer" />
   )

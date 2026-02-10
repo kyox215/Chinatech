@@ -1,0 +1,57 @@
+{
+  "Dashboard": {
+    "title": "Dashboard",
+    "description": "Overview of repair shop performance",
+    "activeTickets": "Active Tickets",
+    "pendingParts": "Pending Parts",
+    "completedToday": "Completed Today",
+    "recentActivity": "Recent Activity",
+    "inProgress": "In Progress",
+    "currentlyInProgress": "Currently in progress",
+    "waitingForDelivery": "Waiting for delivery",
+    "revenueGenerated": "Revenue generated",
+    "latestUpdates": "Latest updates from the shop",
+    "assignedTo": "Assigned to",
+    "newTicket": "New Ticket"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "repairs": "Repairs",
+    "inventory": "Inventory",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "Repairs": {
+    "title": "Repair Tickets",
+    "description": "Manage all incoming repair requests",
+    "newTicket": "New Ticket",
+    "table": {
+      "id": "ID",
+      "customer": "Customer",
+      "device": "Device",
+      "issue": "Issue",
+      "status": "Status",
+      "price": "Price",
+      "actions": "Actions",
+      "viewDetails": "View Details",
+      "editTicket": "Edit Ticket"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "Auth": {
+    "welcomeBack": "Welcome back",
+    "enterCredentials": "Enter your credentials to access the workspace",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in"
+  },
+  "Common": {
+    "search": "Search...",
+    "language": "Language"
+  }
+}

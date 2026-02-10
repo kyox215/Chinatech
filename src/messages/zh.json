@@ -1,0 +1,57 @@
+{
+  "Dashboard": {
+    "title": "仪表盘",
+    "description": "维修店业绩概览",
+    "activeTickets": "进行中的工单",
+    "pendingParts": "等待配件",
+    "completedToday": "今日完成",
+    "recentActivity": "最近活动",
+    "inProgress": "进行中",
+    "currentlyInProgress": "当前正在处理",
+    "waitingForDelivery": "等待交付",
+    "revenueGenerated": "产生收入",
+    "latestUpdates": "店铺最新动态",
+    "assignedTo": "分配给",
+    "newTicket": "新建工单"
+  },
+  "Sidebar": {
+    "dashboard": "仪表盘",
+    "repairs": "维修管理",
+    "inventory": "库存管理",
+    "settings": "系统设置",
+    "signOut": "退出登录"
+  },
+  "Repairs": {
+    "title": "维修工单",
+    "description": "管理所有收到的维修请求",
+    "newTicket": "新建工单",
+    "table": {
+      "id": "编号",
+      "customer": "客户",
+      "device": "设备",
+      "issue": "问题",
+      "status": "状态",
+      "price": "价格",
+      "actions": "操作",
+      "viewDetails": "查看详情",
+      "editTicket": "编辑工单"
+    },
+    "status": {
+      "pending": "待处理",
+      "in_progress": "进行中",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    }
+  },
+  "Auth": {
+    "welcomeBack": "欢迎回来",
+    "enterCredentials": "输入您的凭证以访问工作区",
+    "email": "邮箱",
+    "password": "密码",
+    "signIn": "登录"
+  },
+  "Common": {
+    "search": "搜索...",
+    "language": "语言"
+  }
+}

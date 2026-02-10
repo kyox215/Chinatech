@@ -1,0 +1,57 @@
+{
+  "Dashboard": {
+    "title": "Dashboard",
+    "description": "Panoramica delle prestazioni dell'officina",
+    "activeTickets": "Ticket Attivi",
+    "pendingParts": "Parti in Attesa",
+    "completedToday": "Completati Oggi",
+    "recentActivity": "Attività Recente",
+    "inProgress": "In Corso",
+    "currentlyInProgress": "Attualmente in corso",
+    "waitingForDelivery": "In attesa di consegna",
+    "revenueGenerated": "Entrate generate",
+    "latestUpdates": "Ultimi aggiornamenti dal negozio",
+    "assignedTo": "Assegnato a",
+    "newTicket": "Nuovo Ticket"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "repairs": "Riparazioni",
+    "inventory": "Magazzino",
+    "settings": "Impostazioni",
+    "signOut": "Esci"
+  },
+  "Repairs": {
+    "title": "Ticket di Riparazione",
+    "description": "Gestisci tutte le richieste di riparazione in arrivo",
+    "newTicket": "Nuovo Ticket",
+    "table": {
+      "id": "ID",
+      "customer": "Cliente",
+      "device": "Dispositivo",
+      "issue": "Problema",
+      "status": "Stato",
+      "price": "Prezzo",
+      "actions": "Azioni",
+      "viewDetails": "Vedi Dettagli",
+      "editTicket": "Modifica Ticket"
+    },
+    "status": {
+      "pending": "In Attesa",
+      "in_progress": "In Corso",
+      "completed": "Completato",
+      "cancelled": "Cancellato"
+    }
+  },
+  "Auth": {
+    "welcomeBack": "Bentornato",
+    "enterCredentials": "Inserisci le tue credenziali per accedere",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Accedi"
+  },
+  "Common": {
+    "search": "Cerca...",
+    "language": "Lingua"
+  }
+}
