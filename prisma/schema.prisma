@@ -6,62 +6,57 @@ datasource db {
   provider = "postgresql"
 }
 
-// 核心模块
 model User {
   id      String   @id @default(cuid())
   email   String   @unique
   role    String   @default("USER")
-  tickets Ticket[] // 关联维修单
+  tickets Ticket[]
 }
 
-// 维修模块
 model Ticket {
-  id          String   @id @default(cuid())
-  status      String   @default("PENDING")
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  partsUsed   TicketPart[]
+  id        String       @id @default(cuid())
+  status    String       @default("PENDING")
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  partsUsed TicketPart[]
 }
 
-// 库存模块
 model Part {
-  id        String   @id @default(cuid())
-  name      String
-  stock     Int
-  tickets   TicketPart[]
+  id      String       @id @default(cuid())
+  name    String
+  stock   Int
+  tickets TicketPart[]
 }
 
 model TicketPart {
   ticketId String
   partId   String
   quantity Int
-  ticket   Ticket @relation(fields: [ticketId], references: [id])
   part     Part   @relation(fields: [partId], references: [id])
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
 
   @@id([ticketId, partId])
 }
 
-// 报价系统模块
 model Quote {
-  id           String   @id @default(cuid())
-  brand        String
-  model        String
-  repairId     String   @unique @map("repair_id") // 原始CSV/系统中的唯一标识
-  repairLabel  String   @map("repair_label")
-  repairType   String   @map("repair_type") // screen, battery, other
-  quality      String   // orig, comp, altcap, standard
-  price        Float
-  warranty     String
-  count        Int      @default(0)
-  isUnstable   Boolean  @default(false) @map("is_unstable")
-  priceSpread  String?  @map("price_spread")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(cuid())
+  brand       String
+  model       String
+  repairId    String   @unique @map("repair_id")
+  repairLabel String   @map("repair_label")
+  repairType  String   @map("repair_type")
+  quality     String
+  price       Float
+  warranty    String
+  count       Int      @default(0)
+  isUnstable  Boolean  @default(false) @map("is_unstable")
+  priceSpread String?  @map("price_spread")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("quotes")
 }
 
-// 回收模块
 model RecycleModel {
   id               String   @id @default(cuid())
   model            String   @unique
@@ -74,4 +69,3 @@ model RecycleModel {
 
   @@map("recycle_models")
 }
-
