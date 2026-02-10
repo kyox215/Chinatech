@@ -68,4 +68,5 @@ model RecycleModel {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("recycle_models")
+  @@index([releaseYear])
 }
