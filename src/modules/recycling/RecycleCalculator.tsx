@@ -45,7 +45,7 @@ export function RecycleCalculator() {
 
   // Initial Data Load
   React.useEffect(() => {
-    if (data.length > 0 && !selectedModel) {
+    if (data && data.length > 0 && !selectedModel) {
       setSelectedModel(data[0]);
     }
   }, [data, selectedModel]);
@@ -139,7 +139,7 @@ export function RecycleCalculator() {
     </div>
   );
 
-  if (isLoading) return (
+  if (isLoading && data.length === 0) return (
     <div className="flex items-center justify-center p-12">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
       <span className="ml-3 font-bold text-slate-500">Loading recycling data...</span>
@@ -147,7 +147,7 @@ export function RecycleCalculator() {
   );
 
   // If data loaded but empty
-  if (data.length === 0) return (
+  if (!isLoading && data.length === 0) return (
     <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl m-4">
       <h3 className="text-lg font-bold text-slate-600">No Data Available</h3>
       <p className="text-slate-400 mt-2">The recycling database appears to be empty.</p>
@@ -155,13 +155,20 @@ export function RecycleCalculator() {
     </div>
   );
 
-  // If data exists but model not selected yet (initializing state)
-  if (!selectedModel) return (
-     <div className="flex items-center justify-center p-12">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
-      <span className="ml-3 font-bold text-slate-500">Initializing calculator...</span>
-    </div>
-  );
+  if (data.length > 0 && !selectedModel) {
+      // Auto-select first model if not selected yet
+      const firstModel = data[0];
+      setSelectedModel(firstModel);
+      return (
+         <div className="flex items-center justify-center p-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+          <span className="ml-3 font-bold text-slate-500">Initializing calculator...</span>
+        </div>
+      );
+  }
+
+  // Ensure selectedModel is not null for main render
+  if (!selectedModel) return null;
 
   return (
     <div className="max-w-6xl mx-auto p-4 font-sans text-slate-800 animate-in fade-in duration-500">
