@@ -182,8 +182,8 @@ export function RecycleCalculator() {
         {/* Mobile Sticky Price Panel */}
         <div className="lg:hidden fixed top-16 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200 transition-all duration-300">
             <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
-                {/* Left: Price Info - Flexible width with max-width constraint */}
-                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4 justify-center max-w-[calc(100%-140px)]">
+                {/* Left: Price Info - Flexible width with stricter max-width constraint */}
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-2 max-w-[calc(100%-160px)] sm:max-w-[calc(100%-180px)] justify-center">
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate" title={t('finalPriceTitle')}>
                         {t('finalPriceTitle')}
                     </span>
