@@ -61,16 +61,3 @@ model Quote {
   @@map("quotes")
 }
 
-// 回收模块
-model RecycleModel {
-  id               String   @id @default(cuid())
-  model            String   @unique
-  screenPrice      Float    @map("screen_price")
-  batteryPrice     Float    @map("battery_price")
-  baseRecyclePrice Float    @map("base_recycle_price")
-  releaseYear      Int      @map("release_year")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  @@map("recycle_models")
-}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Wrench, Package, Settings, LogOut, Recycle, CircleDollarSign } from "lucide-react";
+import { LayoutDashboard, Wrench, Package, Settings, LogOut, CircleDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
@@ -9,7 +9,6 @@ export function Sidebar({ className }: { className?: string }) {
   const navigation = [
     { name: t("dashboard"), href: "/", icon: LayoutDashboard },
     { name: t("repairs"), href: "/repairs", icon: Wrench },
-    { name: t("recycling"), href: "/recycling", icon: Recycle },
     { name: t("quotes"), href: "/quotes", icon: CircleDollarSign },
     { name: t("inventory"), href: "/inventory", icon: Package },
     { name: t("settings"), href: "/settings", icon: Settings },
