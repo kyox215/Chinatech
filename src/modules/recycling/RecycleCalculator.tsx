@@ -45,6 +45,7 @@ export function RecycleCalculator() {
 
   // Initial Data Load
   React.useEffect(() => {
+    // Only set initial model if data is loaded, we have data, and no model is selected yet
     if (data && data.length > 0 && !selectedModel) {
       setSelectedModel(data[0]);
     }
@@ -156,10 +157,6 @@ export function RecycleCalculator() {
   );
 
   if (data.length > 0 && !selectedModel) {
-      // Auto-select first model if not selected yet
-      const firstModel = data[0];
-      // Schedule state update
-      setTimeout(() => setSelectedModel(firstModel), 0);
       return (
          <div className="flex items-center justify-center p-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
