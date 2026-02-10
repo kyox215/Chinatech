@@ -328,7 +328,7 @@ export function RecycleCalculator() {
             </div>
 
             {/* Right: Quote Panel */}
-            <div className="lg:col-span-4 flex flex-col">
+            <div className="lg:col-span-4 flex flex-col order-first lg:order-last">
                 <div className="bg-slate-900 text-white rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-6 max-h-[calc(100vh-6rem)]">
                     
                     <div className="mt-2 text-center border-b border-white/10 pb-6 relative z-10 shrink-0">
