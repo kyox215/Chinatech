@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 核心模块
+model User {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  role    String   @default("USER")
+  tickets Ticket[] // 关联维修单
+}
+
+// 维修模块
+model Ticket {
+  id          String   @id @default(cuid())
+  status      String   @default("PENDING")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  partsUsed   TicketPart[]
+}
+
+// 库存模块
+model Part {
+  id        String   @id @default(cuid())
+  name      String
+  stock     Int
+  tickets   TicketPart[]
+}
+
+model TicketPart {
+  ticketId String
+  partId   String
+  quantity Int
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  part     Part   @relation(fields: [partId], references: [id])
+
+  @@id([ticketId, partId])
+}
