@@ -33,10 +33,11 @@ iPhone 11 Pro,349,99,130,2019
 iPhone 11,249,99,90,2019`;
 
 export const storageTiers = [
-  { label: "64G / 128G", value: 0 },
-  { label: "256G", value: 15 },
-  { label: "512G", value: 30 },
-  { label: "1TB", value: 50 }
+  { label: "64G", value: 0 },
+  { label: "128G", value: 10 },
+  { label: "256G", value: 25 },
+  { label: "512G", value: 40 },
+  { label: "1TB", value: 60 }
 ];
 
 export const parseCSV = (csvText: string): PhoneModel[] => {
