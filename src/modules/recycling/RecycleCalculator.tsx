@@ -215,8 +215,7 @@ export function RecycleCalculator() {
                     
                     {/* Trend Label */}
                     <div className={cn(
-                        "absolute top-0 right-0 px-4 py-2 text-[10px] font-bold uppercase rounded-bl-xl z-0 bg-opacity-10",
-                        depInfo.color.replace('text', 'bg'),
+                        "absolute top-0 right-0 px-4 py-2 text-[10px] font-bold uppercase rounded-bl-xl z-0 bg-slate-50",
                         depInfo.color
                     )}>
                         {t('marketTrend')}: {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%/mo)
