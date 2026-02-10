@@ -34,6 +34,8 @@ const BRANDS: { key: BrandType; label: string; icon?: string }[] = [
   { key: 'OPPO', label: 'OPPO', icon: 'https://cdn.simpleicons.org/oppo/009B77' },
 ];
 
+import { UnifiedImage } from "@/components/ui/unified-image";
+
 export function Header({
   hasData,
   isAuditMode,
@@ -171,18 +173,20 @@ export function Header({
               <button
                 key={brand.key}
                 onClick={() => onBrandChange(brand.key)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 h-9 border shadow-sm whitespace-nowrap ${
+                className={`group px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 h-9 border shadow-sm whitespace-nowrap ${
                   currentBrand === brand.key
                     ? 'bg-slate-900 text-white border-slate-900 ring-2 ring-slate-200 ring-offset-1'
                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 {brand.icon && (
-                  <img
+                  <UnifiedImage
                     src={brand.icon}
-                    className="w-4 h-4 object-contain"
                     alt={brand.label}
-                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                    width={16}
+                    height={16}
+                    containerClassName="w-4 h-4 border-none bg-transparent"
+                    imageClassName={`transition-transform duration-300 group-hover:scale-110 ${currentBrand === brand.key ? 'brightness-0 invert' : ''}`}
                   />
                 )}
                 <span>{brand.label}</span>
