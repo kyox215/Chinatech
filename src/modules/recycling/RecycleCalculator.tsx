@@ -158,7 +158,8 @@ export function RecycleCalculator() {
   if (data.length > 0 && !selectedModel) {
       // Auto-select first model if not selected yet
       const firstModel = data[0];
-      setSelectedModel(firstModel);
+      // Schedule state update
+      setTimeout(() => setSelectedModel(firstModel), 0);
       return (
          <div className="flex items-center justify-center p-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
