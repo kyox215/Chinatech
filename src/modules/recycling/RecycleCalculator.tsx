@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import useSWR from 'swr';
 import { storageTiers, currentYear } from './data';
 import { PhoneModel } from './types';
-import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer } from 'lucide-react';
+import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -23,6 +23,7 @@ export function RecycleCalculator() {
   const [selectedStorage, setSelectedStorage] = React.useState(storageTiers[0]);
   const [isScreenBroken, setIsScreenBroken] = React.useState(false);
   const [holdDays, setHoldDays] = React.useState(7);
+  const [isMobilePanelExpanded, setIsMobilePanelExpanded] = React.useState(false);
 
   // Dynamic Options
   const conditionGrades = React.useMemo(() => [
@@ -176,9 +177,78 @@ export function RecycleCalculator() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 font-sans text-slate-800 animate-in fade-in duration-500">
+    <div className="max-w-6xl mx-auto font-sans text-slate-800 animate-in fade-in duration-500">
         
-        <div className="grid lg:grid-cols-12 gap-6">
+        {/* Mobile Sticky Panel (Fixed Top) */}
+        <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900 text-white shadow-xl transition-all duration-300">
+             {/* Compact Header Row */}
+             <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex flex-col">
+                   <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">{t('finalPriceTitle')}</div>
+                   <div className="flex items-baseline gap-2">
+                       <span className="text-3xl font-bold tracking-tight">€{finalQuote}</span>
+                       <div className="text-[10px] bg-white/10 rounded px-1.5 py-0.5 flex items-center gap-1 backdrop-blur-sm">
+                           <span className="text-yellow-400 font-mono font-bold">€{nextMonthPrice}</span>
+                           <span className="text-red-400 animate-pulse">↓</span>
+                       </div>
+                   </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={() => setIsMobilePanelExpanded(!isMobilePanelExpanded)}
+                        className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                       {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    </button>
+                    <button className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg active:scale-95 flex items-center gap-1.5 transition-all">
+                        <Printer className="h-4 w-4" />
+                        <span>{t('confirmDeal')}</span>
+                    </button>
+                </div>
+             </div>
+             
+             {/* Expanded Details Overlay */}
+             {isMobilePanelExpanded && (
+                <div className="px-4 pb-4 border-t border-white/10 max-h-[50vh] overflow-y-auto bg-slate-900/95 backdrop-blur-md animate-in slide-in-from-top-2">
+                    <div className="space-y-2 pt-3 text-xs">
+                        <div className="flex justify-between opacity-70 py-1 border-b border-white/5">
+                            <span>{t('basePrice')}</span>
+                            <span className="font-mono">€ {basePrice}</span>
+                        </div>
+                        
+                        {depreciationCost > 0 && (
+                            <div className="flex justify-between text-red-300 py-1 border-b border-white/5">
+                                <span>- {t('depreciationLoss')} ({holdDays}d)</span>
+                                <span className="font-mono">- {depreciationCost}</span>
+                            </div>
+                        )}
+                        
+                        {selectedBattery?.value > 0 && (
+                            <div className="flex justify-between text-blue-300 py-1 border-b border-white/5">
+                                <span>- {t('batteryLoss')}</span>
+                                <span className="font-mono">- {selectedBattery.type === 'percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel.batteryPrice}</span>
+                            </div>
+                        )}
+                        
+                        {selectedCondition?.deductionPercent > 0 && (
+                            <div className="flex justify-between text-yellow-300 py-1 border-b border-white/5">
+                                <span>- {t('conditionLoss')} ({selectedCondition.id})</span>
+                                <span className="font-mono">- {Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
+                            </div>
+                        )}
+                        
+                        {isScreenBroken && (
+                            <div className="flex justify-between text-red-400 py-1 border-b border-white/5">
+                                <span>- {t('screenLoss')}</span>
+                                <span className="font-mono">- {selectedModel.screenPrice}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+             )}
+        </div>
+
+        <div className="grid lg:grid-cols-12 gap-6 p-4 pt-[100px] lg:pt-4">
             
             {/* Left Configuration Area */}
             <div className="lg:col-span-8 flex flex-col gap-4">
@@ -327,25 +397,25 @@ export function RecycleCalculator() {
 
             </div>
 
-            {/* Right: Quote Panel */}
-            <div className="lg:col-span-4 flex flex-col order-first lg:order-last">
-                <div className="bg-slate-900 text-white rounded-xl p-4 lg:p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-6 max-h-[calc(100vh-6rem)]">
+            {/* Right: Quote Panel (Desktop Only) */}
+            <div className="hidden lg:flex lg:col-span-4 flex-col order-last">
+                <div className="bg-slate-900 text-white rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-6 max-h-[calc(100vh-6rem)]">
                     
-                    <div className="mt-0 lg:mt-2 text-center border-b border-white/10 pb-4 lg:pb-6 relative z-10 shrink-0">
-                        <div className="text-slate-400 text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 lg:mb-2">{t('finalPriceTitle')}</div>
+                    <div className="mt-2 text-center border-b border-white/10 pb-6 relative z-10 shrink-0">
+                        <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('finalPriceTitle')}</div>
                         <div className="flex items-center justify-center">
-                            <span className="text-2xl lg:text-3xl font-bold mr-1 text-green-500">€</span>
-                            <span className="text-5xl lg:text-7xl font-bold tracking-tighter leading-none">{finalQuote}</span>
+                            <span className="text-3xl font-bold mr-1 text-green-500">€</span>
+                            <span className="text-7xl font-bold tracking-tighter leading-none">{finalQuote}</span>
                         </div>
                         {/* Forecast */}
-                        <div className="mt-2 lg:mt-4 text-[10px] lg:text-xs bg-white/5 rounded px-2 py-1 inline-block backdrop-blur-sm">
+                        <div className="mt-4 text-xs bg-white/5 rounded px-2 py-1 inline-block backdrop-blur-sm">
                             <span className="opacity-60 mr-2">{t('nextMonthPred')}:</span>
                             <span className="font-mono text-yellow-400 font-bold">€ {nextMonthPrice}</span>
                             <span className="ml-1 text-red-400 text-[10px] animate-pulse">↓</span>
                         </div>
                     </div>
 
-                    <div className="space-y-2 lg:space-y-3 mt-4 lg:mt-6 flex-1 text-xs lg:text-sm relative z-10 overflow-y-auto scrollbar-hide min-h-0">
+                    <div className="space-y-3 mt-6 flex-1 text-sm relative z-10 overflow-y-auto scrollbar-hide min-h-0">
                         <div className="flex justify-between opacity-70 py-1"><span>{t('basePrice')}</span><span className="font-mono">€ {basePrice}</span></div>
                         
                         {depreciationCost > 0 && (
@@ -377,8 +447,8 @@ export function RecycleCalculator() {
                         )}
                     </div>
 
-                    <div className="mt-auto relative z-10 pt-3 lg:pt-4 shrink-0">
-                        <button className="w-full bg-green-600 hover:bg-green-500 text-white py-3 lg:py-4 rounded-xl font-bold text-base lg:text-lg shadow-lg active:scale-95 flex items-center justify-center gap-2 group transition-all">
+                    <div className="mt-auto relative z-10 pt-4 shrink-0">
+                        <button className="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 flex items-center justify-center gap-2 group transition-all">
                             <span className="group-hover:hidden">{t('confirmDeal')}</span>
                             <span className="hidden group-hover:inline flex items-center gap-2">
                                 <Printer className="h-5 w-5" /> {t('printReceipt')}
