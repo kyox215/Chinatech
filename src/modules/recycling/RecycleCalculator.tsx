@@ -329,9 +329,9 @@ export function RecycleCalculator() {
 
             {/* Right: Quote Panel */}
             <div className="lg:col-span-4 flex flex-col">
-                <div className="bg-slate-900 text-white rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-6">
+                <div className="bg-slate-900 text-white rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-6 max-h-[calc(100vh-6rem)]">
                     
-                    <div className="mt-2 text-center border-b border-white/10 pb-6 relative z-10">
+                    <div className="mt-2 text-center border-b border-white/10 pb-6 relative z-10 shrink-0">
                         <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('finalPriceTitle')}</div>
                         <div className="flex items-center justify-center">
                             <span className="text-3xl font-bold mr-1 text-green-500">€</span>
@@ -345,7 +345,7 @@ export function RecycleCalculator() {
                         </div>
                     </div>
 
-                    <div className="space-y-3 mt-6 flex-1 text-sm relative z-10 overflow-y-auto max-h-[350px] scrollbar-hide">
+                    <div className="space-y-3 mt-6 flex-1 text-sm relative z-10 overflow-y-auto scrollbar-hide min-h-0">
                         <div className="flex justify-between opacity-70 py-1"><span>{t('basePrice')}</span><span className="font-mono">€ {basePrice}</span></div>
                         
                         {depreciationCost > 0 && (
@@ -377,7 +377,7 @@ export function RecycleCalculator() {
                         )}
                     </div>
 
-                    <div className="mt-auto relative z-10 pt-4">
+                    <div className="mt-auto relative z-10 pt-4 shrink-0">
                         <button className="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 flex items-center justify-center gap-2 group transition-all">
                             <span className="group-hover:hidden">{t('confirmDeal')}</span>
                             <span className="hidden group-hover:inline flex items-center gap-2">
