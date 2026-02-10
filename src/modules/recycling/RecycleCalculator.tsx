@@ -182,9 +182,9 @@ export function RecycleCalculator() {
         {/* Mobile Sticky Price Panel */}
         <div className="lg:hidden fixed top-16 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200 transition-all duration-300">
             <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
-                {/* Left: Price Info - Flexible width with min-width constraint */}
-                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4 justify-center">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                {/* Left: Price Info - Flexible width with max-width constraint */}
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4 justify-center max-w-[calc(100%-140px)]">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate" title={t('finalPriceTitle')}>
                         {t('finalPriceTitle')}
                     </span>
                     <div className="flex items-baseline gap-2 overflow-hidden">
@@ -193,9 +193,9 @@ export function RecycleCalculator() {
                             €{finalQuote}
                         </span>
                         {/* Prediction badge: prevents shrinking, hides if space is extremely tight (optional, but flex-wrap might break layout) */}
-                        <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded-full text-[10px] shrink-0">
-                            <span className="text-yellow-700 font-mono font-bold">€{nextMonthPrice}</span>
-                            <span className="text-red-500 animate-pulse">↓</span>
+                        <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded-full text-[10px] shrink-0 max-w-[100px]" title={`${t('nextMonthPred')}: €${nextMonthPrice}`}>
+                            <span className="text-yellow-700 font-mono font-bold truncate">€{nextMonthPrice}</span>
+                            <span className="text-red-500 animate-pulse shrink-0">↓</span>
                         </div>
                     </div>
                 </div>
