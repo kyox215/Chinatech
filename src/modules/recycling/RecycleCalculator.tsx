@@ -180,29 +180,29 @@ export function RecycleCalculator() {
     <div className="max-w-6xl mx-auto font-sans text-slate-800 animate-in fade-in duration-500">
         
         {/* Mobile/Tablet Sticky Panel (Fixed Top) */}
-        {/* 显示逻辑优化：在 lg 断点以下显示，解决平板竖屏问题 */}
-        <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900 text-white shadow-xl transition-all duration-300">
+        <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-slate-950 text-white shadow-2xl transition-all duration-300 border-b border-white/5">
              {/* Compact Header Row */}
              <div className="flex items-center justify-between px-4 py-3 max-w-6xl mx-auto">
-                <div className="flex flex-col">
-                   <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">{t('finalPriceTitle')}</div>
-                   <div className="flex items-baseline gap-2">
-                       <span className="text-3xl font-bold tracking-tight">€{finalQuote}</span>
-                       <div className="text-[10px] bg-white/10 rounded px-1.5 py-0.5 flex items-center gap-1 backdrop-blur-sm">
-                           <span className="text-yellow-400 font-mono font-bold">€{nextMonthPrice}</span>
-                           <span className="text-red-400 animate-pulse">↓</span>
+                <div className="flex flex-col gap-0.5">
+                   <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">{t('finalPriceTitle')}</div>
+                   <div className="flex items-baseline gap-3">
+                       <span className="text-3xl font-bold tracking-tighter font-mono">€{finalQuote}</span>
+                       <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-full border border-white/5 backdrop-blur-sm">
+                           <span className="text-[10px] text-slate-400">{t('nextMonthPred')}:</span>
+                           <span className="text-xs text-yellow-400 font-mono font-bold">€{nextMonthPrice}</span>
+                           <span className="text-[10px] text-red-400 animate-pulse">↓</span>
                        </div>
                    </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setIsMobilePanelExpanded(!isMobilePanelExpanded)}
-                        className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        aria-label="Toggle details"
+                        className="p-2.5 bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-all active:scale-95 border border-white/5"
+                        aria-label={isMobilePanelExpanded ? "Collapse details" : "Expand details"}
                     >
-                       {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                       {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5 text-slate-300" /> : <ChevronDown className="h-5 w-5 text-slate-300" />}
                     </button>
-                    <button className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg active:scale-95 flex items-center gap-1.5 transition-all focus:ring-2 focus:ring-green-400 focus:outline-none min-h-[44px] min-w-[44px] justify-center">
+                    <button className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-green-900/20 active:scale-95 flex items-center gap-2 transition-all min-h-[44px]">
                         <Printer className="h-4 w-4" />
                         <span>{t('confirmDeal')}</span>
                     </button>
@@ -211,38 +211,38 @@ export function RecycleCalculator() {
              
              {/* Expanded Details Overlay */}
              {isMobilePanelExpanded && (
-                <div className="px-4 pb-4 border-t border-white/10 max-h-[50vh] overflow-y-auto bg-slate-900/95 backdrop-blur-md animate-in slide-in-from-top-2">
-                    <div className="space-y-2 pt-3 text-xs max-w-6xl mx-auto">
-                        <div className="flex justify-between opacity-70 py-1 border-b border-white/5">
-                            <span>{t('basePrice')}</span>
-                            <span className="font-mono">€ {basePrice}</span>
+                <div className="px-4 pb-6 border-t border-white/5 max-h-[60vh] overflow-y-auto bg-slate-950/95 backdrop-blur-xl animate-in slide-in-from-top-2 shadow-inner">
+                    <div className="space-y-3 pt-4 text-xs max-w-6xl mx-auto">
+                        <div className="flex justify-between items-center opacity-80 py-2 border-b border-white/5">
+                            <span className="font-medium text-slate-300">{t('basePrice')}</span>
+                            <span className="font-mono font-bold text-white text-sm">€ {basePrice}</span>
                         </div>
                         
                         {depreciationCost > 0 && (
-                            <div className="flex justify-between text-red-300 py-1 border-b border-white/5">
-                                <span>- {t('depreciationLoss')} ({holdDays}d)</span>
-                                <span className="font-mono">- {depreciationCost}</span>
+                            <div className="flex justify-between items-center text-red-300 py-2 border-b border-white/5 bg-red-500/5 px-2 -mx-2 rounded">
+                                <span className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" /> {t('depreciationLoss')} ({holdDays}d)</span>
+                                <span className="font-mono font-bold">- €{depreciationCost}</span>
                             </div>
                         )}
                         
                         {selectedBattery?.value > 0 && (
-                            <div className="flex justify-between text-blue-300 py-1 border-b border-white/5">
-                                <span>- {t('batteryLoss')}</span>
-                                <span className="font-mono">- {selectedBattery.type === 'percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel.batteryPrice}</span>
+                            <div className="flex justify-between items-center text-blue-300 py-2 border-b border-white/5">
+                                <span className="flex items-center gap-1.5"><Battery className="h-3 w-3" /> {t('batteryLoss')}</span>
+                                <span className="font-mono font-bold">- €{selectedBattery.type === 'percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel.batteryPrice}</span>
                             </div>
                         )}
                         
                         {selectedCondition?.deductionPercent > 0 && (
-                            <div className="flex justify-between text-yellow-300 py-1 border-b border-white/5">
-                                <span>- {t('conditionLoss')} ({selectedCondition.id})</span>
-                                <span className="font-mono">- {Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
+                            <div className="flex justify-between items-center text-yellow-300 py-2 border-b border-white/5">
+                                <span className="flex items-center gap-1.5"><ShieldAlert className="h-3 w-3" /> {t('conditionLoss')} ({selectedCondition.id})</span>
+                                <span className="font-mono font-bold">- €{Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
                             </div>
                         )}
                         
                         {isScreenBroken && (
-                            <div className="flex justify-between text-red-400 py-1 border-b border-white/5">
-                                <span>- {t('screenLoss')}</span>
-                                <span className="font-mono">- {selectedModel.screenPrice}</span>
+                            <div className="flex justify-between items-center text-red-400 py-2 border-b border-white/5">
+                                <span className="flex items-center gap-1.5"><Smartphone className="h-3 w-3" /> {t('screenLoss')}</span>
+                                <span className="font-mono font-bold">- €{selectedModel.screenPrice}</span>
                             </div>
                         )}
                     </div>

@@ -10,7 +10,7 @@ export function Header() {
   const t = useTranslations("Common");
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 md:px-8">
+    <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 md:px-8 shadow-sm">
       <div className="flex items-center gap-4">
         {/* Mobile Menu Trigger */}
         <Sheet>
