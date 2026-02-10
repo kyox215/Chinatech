@@ -171,21 +171,21 @@ export function Header({
               <button
                 key={brand.key}
                 onClick={() => onBrandChange(brand.key)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 h-9 border shadow-sm whitespace-nowrap ${
                   currentBrand === brand.key
-                    ? 'font-bold bg-slate-800 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-slate-900 text-white border-slate-900 ring-2 ring-slate-200 ring-offset-1'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 {brand.icon && (
                   <img
-                    src={brand.icon || "/placeholder.svg"}
-                    className="filter-logo opacity-60"
+                    src={brand.icon}
+                    className="w-4 h-4 object-contain"
                     alt={brand.label}
                     onError={(e) => (e.currentTarget.style.display = 'none')}
                   />
                 )}
-                {brand.label}
+                <span>{brand.label}</span>
               </button>
             ))}
           </div>
