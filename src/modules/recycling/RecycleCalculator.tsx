@@ -132,9 +132,37 @@ export function RecycleCalculator() {
   // Forecast next month price
   const nextMonthPrice = Math.floor(finalQuote * (1 - depInfo.monthlyRate));
 
-  if (error) return <div className="p-4 text-red-500">Error loading data: {error.message}</div>;
-  if (isLoading) return <div className="p-4">Loading recycling data...</div>;
-  if (!selectedModel) return <div className="p-4">No data available. Please check database connection.</div>;
+  if (error) return (
+    <div className="p-8 text-center">
+      <div className="text-red-500 font-bold mb-2">Error loading data</div>
+      <div className="text-sm text-slate-500">{error.message}</div>
+      <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-slate-900 text-white rounded">Retry</button>
+    </div>
+  );
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center p-12">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      <span className="ml-3 font-bold text-slate-500">Loading recycling data...</span>
+    </div>
+  );
+
+  // If data loaded but empty
+  if (data.length === 0) return (
+    <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl m-4">
+      <h3 className="text-lg font-bold text-slate-600">No Data Available</h3>
+      <p className="text-slate-400 mt-2">The recycling database appears to be empty.</p>
+      <p className="text-xs text-slate-400 mt-1">Please check the database connection or run seed script.</p>
+    </div>
+  );
+
+  // If data exists but model not selected yet (initializing state)
+  if (!selectedModel) return (
+     <div className="flex items-center justify-center p-12">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      <span className="ml-3 font-bold text-slate-500">Initializing calculator...</span>
+    </div>
+  );
 
   return (
     <div className="max-w-6xl mx-auto p-4 font-sans text-slate-800 animate-in fade-in duration-500">
