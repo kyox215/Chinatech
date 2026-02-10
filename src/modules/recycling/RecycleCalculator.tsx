@@ -65,7 +65,9 @@ export function RecycleCalculator() {
   // ==========================================
   // Core Logic: Time Depreciation
   // ==========================================
-  const getDepreciationInfo = React.useCallback(() => {
+  // Memoize the depreciation logic so it updates when model or language changes
+  const depInfo = React.useMemo(() => {
+    // Default safe values
     if (!selectedModel) return { monthlyRate: 0, label: t('stableDrop'), color: "text-gray-400" };
     
     const age = currentYear - selectedModel.releaseYear;
@@ -85,7 +87,7 @@ export function RecycleCalculator() {
     }
 
     return { monthlyRate, label, color };
-  }, [selectedModel, t]);
+  }, [selectedModel, t]); // Dependencies: updates whenever model or translation function changes
 
   const calculateQuote = () => {
     if (!selectedModel) return 0;
@@ -108,7 +110,7 @@ export function RecycleCalculator() {
     if (isScreenBroken) price -= selectedModel.screenPrice;
 
     // 5. Time/Inventory Risk Deduction (Depreciation)
-    const { monthlyRate } = getDepreciationInfo();
+    const { monthlyRate } = depInfo;
     // Formula: Price * (MonthlyRate / 30 * HoldDays)
     const depreciationAmount = price * (monthlyRate / 30 * holdDays);
     price -= depreciationAmount;
@@ -118,7 +120,6 @@ export function RecycleCalculator() {
 
   const finalQuote = calculateQuote();
   const basePrice = selectedModel ? (selectedModel.baseRecyclePrice + selectedStorage.value) : 0;
-  const depInfo = getDepreciationInfo();
   
   // Calculate depreciation cost for display
   const calcDepreciationCost = () => {
