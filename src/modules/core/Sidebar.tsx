@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { LayoutDashboard, Wrench, Package, Settings, LogOut, Recycle, CircleDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 export function Sidebar({ className }: { className?: string }) {
   const t = useTranslations("Sidebar");

@@ -166,7 +166,13 @@ export function RecycleCalculator() {
   }
 
   // Ensure selectedModel is not null for main render
-  if (!selectedModel) return null;
+  if (!selectedModel) {
+    return (
+      <div className="p-12 text-center text-red-500">
+        Internal Error: State synchronization failed. Please refresh.
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-4 font-sans text-slate-800 animate-in fade-in duration-500">
