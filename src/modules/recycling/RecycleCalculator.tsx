@@ -179,10 +179,11 @@ export function RecycleCalculator() {
   return (
     <div className="max-w-6xl mx-auto font-sans text-slate-800 animate-in fade-in duration-500">
         
-        {/* Mobile Sticky Panel (Fixed Top) */}
+        {/* Mobile/Tablet Sticky Panel (Fixed Top) */}
+        {/* 显示逻辑优化：在 lg 断点以下显示，解决平板竖屏问题 */}
         <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900 text-white shadow-xl transition-all duration-300">
              {/* Compact Header Row */}
-             <div className="flex items-center justify-between px-4 py-3">
+             <div className="flex items-center justify-between px-4 py-3 max-w-6xl mx-auto">
                 <div className="flex flex-col">
                    <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">{t('finalPriceTitle')}</div>
                    <div className="flex items-baseline gap-2">
@@ -196,11 +197,12 @@ export function RecycleCalculator() {
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={() => setIsMobilePanelExpanded(!isMobilePanelExpanded)}
-                        className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
+                        className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        aria-label="Toggle details"
                     >
                        {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                     </button>
-                    <button className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg active:scale-95 flex items-center gap-1.5 transition-all">
+                    <button className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg active:scale-95 flex items-center gap-1.5 transition-all focus:ring-2 focus:ring-green-400 focus:outline-none min-h-[44px] min-w-[44px] justify-center">
                         <Printer className="h-4 w-4" />
                         <span>{t('confirmDeal')}</span>
                     </button>
@@ -210,7 +212,7 @@ export function RecycleCalculator() {
              {/* Expanded Details Overlay */}
              {isMobilePanelExpanded && (
                 <div className="px-4 pb-4 border-t border-white/10 max-h-[50vh] overflow-y-auto bg-slate-900/95 backdrop-blur-md animate-in slide-in-from-top-2">
-                    <div className="space-y-2 pt-3 text-xs">
+                    <div className="space-y-2 pt-3 text-xs max-w-6xl mx-auto">
                         <div className="flex justify-between opacity-70 py-1 border-b border-white/5">
                             <span>{t('basePrice')}</span>
                             <span className="font-mono">€ {basePrice}</span>
@@ -253,7 +255,7 @@ export function RecycleCalculator() {
             {/* Left Configuration Area */}
             <div className="lg:col-span-8 flex flex-col gap-4">
                 
-                {/* 1. Model */}
+                {/* 1. Model - Grid Optimization for Tablet */}
                 <div className="bg-white/98 border border-black/5 shadow-sm p-6 rounded-xl relative overflow-hidden">
                     {/* Header: Title + Trend */}
                     <div className="flex justify-between items-center mb-4 relative z-10">
@@ -335,16 +337,16 @@ export function RecycleCalculator() {
                     </div>
                 </div>
 
-                {/* 2. Battery */}
+                {/* 2. Battery - Optimized for Tablet */}
                 <div className="bg-slate-50 border border-slate-200 shadow-sm p-6 rounded-xl">
                     <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">{t('batteryTitle')}</h3>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                         {batteryLevels.map((level, idx) => (
                             <div 
                                 key={idx} 
                                 onClick={() => setSelectedBattery(level)} 
                                 className={cn(
-                                    "p-2 rounded-lg border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center",
+                                    "p-2 rounded-lg border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center min-h-[60px]",
                                     selectedBattery?.label === level.label ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'
                                 )}
                             >
@@ -398,8 +400,8 @@ export function RecycleCalculator() {
             </div>
 
             {/* Right: Quote Panel (Desktop Only) */}
-            <div className="hidden lg:flex lg:col-span-4 flex-col order-last">
-                <div className="bg-slate-900 text-white rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-6 max-h-[calc(100vh-6rem)]">
+            <div className="hidden lg:flex lg:col-span-4 flex-col order-last z-30">
+                <div className="bg-slate-900 text-white rounded-xl p-6 flex-1 flex flex-col relative overflow-hidden shadow-2xl sticky top-24 max-h-[calc(100vh-8rem)] transition-all duration-300 hover:shadow-indigo-500/20">
                     
                     <div className="mt-2 text-center border-b border-white/10 pb-6 relative z-10 shrink-0">
                         <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('finalPriceTitle')}</div>
