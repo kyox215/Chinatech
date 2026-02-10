@@ -180,69 +180,76 @@ export function RecycleCalculator() {
     <div className="max-w-6xl mx-auto font-sans text-slate-800 animate-in fade-in duration-500">
         
         {/* Mobile Sticky Price Panel */}
-        <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900 text-white shadow-2xl border-b border-white/10">
+        <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200 transition-all duration-300">
             <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
-                <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                {/* Left: Price Info - Flexible width with min-width constraint */}
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">
                         {t('finalPriceTitle')}
                     </span>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold font-mono tracking-tighter">€{finalQuote}</span>
-                        <div className="flex items-center gap-1 bg-white/10 px-1.5 py-0.5 rounded text-[10px] backdrop-blur-sm">
-                            <span className="text-yellow-400 font-mono font-bold">€{nextMonthPrice}</span>
-                            <span className="text-red-400 animate-pulse">↓</span>
+                    <div className="flex items-baseline gap-2 overflow-hidden">
+                        {/* Dynamic font size: smaller on mobile, larger on tablet */}
+                        <span className="text-2xl sm:text-3xl font-bold font-mono tracking-tighter truncate text-slate-900" title={`€${finalQuote}`}>
+                            €{finalQuote}
+                        </span>
+                        {/* Prediction badge: prevents shrinking, hides if space is extremely tight (optional, but flex-wrap might break layout) */}
+                        <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded-full text-[10px] shrink-0">
+                            <span className="text-yellow-700 font-mono font-bold">€{nextMonthPrice}</span>
+                            <span className="text-red-500 animate-pulse">↓</span>
                         </div>
                     </div>
                 </div>
                 
-                <div className="flex gap-2">
+                {/* Right: Actions - Fixed/Shrinkable width */}
+                <div className="flex gap-2 shrink-0">
                      <button 
                         onClick={() => setIsMobilePanelExpanded(!isMobilePanelExpanded)}
-                        className="p-2.5 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors border border-white/5 active:scale-95"
+                        className="p-2.5 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all border border-slate-200 active:scale-95 flex-shrink-0 shadow-sm"
                         aria-label="Toggle details"
                     >
-                       {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5 text-slate-300" /> : <ChevronDown className="h-5 w-5 text-slate-300" />}
+                       {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                     </button>
-                    <button className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-green-900/20 active:scale-95 flex items-center gap-2 transition-all">
+                    <button className="bg-slate-900 hover:bg-slate-800 text-white px-3 sm:px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2 transition-all duration-200 flex-shrink-0 transform hover:-translate-y-0.5">
                         <Printer className="h-4 w-4" />
-                        <span>{t('confirmDeal')}</span>
+                        {/* Hide text on very small screens (<360px) to prevent overflow */}
+                        <span className="hidden min-[360px]:inline">{t('confirmDeal')}</span>
                     </button>
                 </div>
             </div>
 
             {/* Expanded Details */}
             {isMobilePanelExpanded && (
-                <div className="px-4 pb-6 bg-slate-900 border-t border-white/10 max-h-[50vh] overflow-y-auto shadow-inner animate-in slide-in-from-top-2">
+                <div className="px-4 pb-6 bg-white border-t border-slate-100 max-h-[50vh] overflow-y-auto shadow-inner animate-in slide-in-from-top-2">
                      <div className="space-y-3 pt-4 text-xs max-w-6xl mx-auto">
-                        <div className="flex justify-between items-center opacity-80 py-2 border-b border-white/5">
-                            <span className="font-medium text-slate-300">{t('basePrice')}</span>
-                            <span className="font-mono font-bold text-white text-sm">€ {basePrice}</span>
+                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                            <span className="font-medium text-slate-500">{t('basePrice')}</span>
+                            <span className="font-mono font-bold text-slate-900 text-sm">€ {basePrice}</span>
                         </div>
                         
                         {depreciationCost > 0 && (
-                            <div className="flex justify-between items-center text-red-300 py-2 border-b border-white/5 bg-red-500/5 px-2 -mx-2 rounded">
-                                <span className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" /> {t('depreciationLoss')} ({holdDays}d)</span>
+                            <div className="flex justify-between items-center text-red-600 py-2 border-b border-red-50 bg-red-50/50 px-3 -mx-3 rounded-lg">
+                                <span className="flex items-center gap-1.5 font-medium"><AlertTriangle className="h-3.5 w-3.5" /> {t('depreciationLoss')} ({holdDays}d)</span>
                                 <span className="font-mono font-bold">- €{depreciationCost}</span>
                             </div>
                         )}
                         
                         {selectedBattery?.value > 0 && (
-                            <div className="flex justify-between items-center text-blue-300 py-2 border-b border-white/5">
-                                <span className="flex items-center gap-1.5"><Battery className="h-3 w-3" /> {t('batteryLoss')}</span>
+                            <div className="flex justify-between items-center text-blue-600 py-2 border-b border-slate-100">
+                                <span className="flex items-center gap-1.5 font-medium"><Battery className="h-3.5 w-3.5" /> {t('batteryLoss')}</span>
                                 <span className="font-mono font-bold">- €{selectedBattery.type === 'percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel.batteryPrice}</span>
                             </div>
                         )}
                         
                         {selectedCondition?.deductionPercent > 0 && (
-                            <div className="flex justify-between items-center text-yellow-300 py-2 border-b border-white/5">
-                                <span className="flex items-center gap-1.5"><ShieldAlert className="h-3 w-3" /> {t('conditionLoss')} ({selectedCondition.id})</span>
+                            <div className="flex justify-between items-center text-yellow-600 py-2 border-b border-slate-100">
+                                <span className="flex items-center gap-1.5 font-medium"><ShieldAlert className="h-3.5 w-3.5" /> {t('conditionLoss')} ({selectedCondition.id})</span>
                                 <span className="font-mono font-bold">- €{Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
                             </div>
                         )}
                         
                         {isScreenBroken && (
-                            <div className="flex justify-between items-center text-red-400 py-2 border-b border-white/5">
-                                <span className="flex items-center gap-1.5"><Smartphone className="h-3 w-3" /> {t('screenLoss')}</span>
+                            <div className="flex justify-between items-center text-red-600 py-2 border-b border-slate-100">
+                                <span className="flex items-center gap-1.5 font-medium"><Smartphone className="h-3.5 w-3.5" /> {t('screenLoss')}</span>
                                 <span className="font-mono font-bold">- €{selectedModel.screenPrice}</span>
                             </div>
                         )}
