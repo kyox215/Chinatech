@@ -37,36 +37,41 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const url = new URL(request.url);
-  const replaceAll = url.searchParams.get("replace") === "true";
-  
   try {
+    const body = await request.json();
+    const url = new URL(request.url);
+    const replaceAll = url.searchParams.get("replace") === "true";
+    
+    // Validate body
+    if (!Array.isArray(body) && !body.brand) {
+       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+
     if (Array.isArray(body)) {
+      console.log(`Processing bulk import: ${body.length} records. Replace: ${replaceAll}`);
+      
+      // Validate items in batch
+      const validItems = body.filter(item => 
+        item.brand && item.model && item.repair_id && typeof item.price === 'number'
+      );
+      
+      if (validItems.length < body.length) {
+        console.warn(`Filtered out ${body.length - validItems.length} invalid records.`);
+      }
+
+      if (validItems.length === 0) {
+        return NextResponse.json({ error: "No valid records to save" }, { status: 400 });
+      }
+
       // Transaction for bulk operations
       const result = await db.$transaction(async (tx) => {
         // Delete all if replaceAll is true
         if (replaceAll) {
           await tx.quote.deleteMany({});
-        }
-
-        const upserted = [];
-        for (const item of body) {
-          const record = await tx.quote.upsert({
-            where: { repairId: item.repair_id },
-            update: {
-              brand: item.brand,
-              model: item.model,
-              repairLabel: item.repair_label,
-              repairType: item.repair_type,
-              quality: item.quality,
-              price: item.price,
-              warranty: item.warranty,
-              count: item.count,
-              isUnstable: item.is_unstable,
-              priceSpread: item.price_spread,
-            },
-            create: {
+          
+          // Use createMany for performance
+          const insertResult = await tx.quote.createMany({
+            data: validItems.map(item => ({
               brand: item.brand,
               model: item.model,
               repairId: item.repair_id,
@@ -78,14 +83,49 @@ export async function POST(request: Request) {
               count: item.count,
               isUnstable: item.is_unstable,
               priceSpread: item.price_spread,
-            },
+            })),
+            skipDuplicates: true 
           });
-          upserted.push(record);
+          return { count: insertResult.count, operation: 'replace' };
+        } else {
+          // Upsert loop for non-replace bulk (slower but safer for updates)
+          const upserted = [];
+          for (const item of validItems) {
+            const record = await tx.quote.upsert({
+              where: { repairId: item.repair_id },
+              update: {
+                brand: item.brand,
+                model: item.model,
+                repairLabel: item.repair_label,
+                repairType: item.repair_type,
+                quality: item.quality,
+                price: item.price,
+                warranty: item.warranty,
+                count: item.count,
+                isUnstable: item.is_unstable,
+                priceSpread: item.price_spread,
+              },
+              create: {
+                brand: item.brand,
+                model: item.model,
+                repairId: item.repair_id,
+                repairLabel: item.repair_label,
+                repairType: item.repair_type,
+                quality: item.quality,
+                price: item.price,
+                warranty: item.warranty,
+                count: item.count,
+                isUnstable: item.is_unstable,
+                priceSpread: item.price_spread,
+              },
+            });
+            upserted.push(record);
+          }
+          return { count: upserted.length, operation: 'upsert', data: upserted.map(toApiResponse) };
         }
-        return upserted;
       });
       
-      return NextResponse.json(result.map(toApiResponse));
+      return NextResponse.json(result);
     } else {
       // Single insert
       const item = body;
@@ -108,8 +148,8 @@ export async function POST(request: Request) {
       return NextResponse.json(toApiResponse(record));
     }
   } catch (error) {
-    console.error("POST Error:", error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    console.error("POST /api/quotes Error:", error);
+    return NextResponse.json({ error: "Database operation failed", details: (error as Error).message }, { status: 500 });
   }
 }
 

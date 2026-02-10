@@ -725,7 +725,7 @@ export function processCSV(data: Record<string, string>[]): ModelItem[] {
 
       if (!map[key].repairs[rKey]) {
         map[key].repairs[rKey] = {
-          id: Math.random().toString(36).substr(2, 9),
+          id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9),
           label: cat.label, type: cat.type, quality: finalQuality,
           priceHistory: [], warrantyHistory: {}, count: 0
         };
