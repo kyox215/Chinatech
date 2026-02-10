@@ -1,3 +1,5 @@
+"use client";
+
 import { LayoutDashboard, Wrench, Package, Settings, LogOut, Recycle, CircleDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
