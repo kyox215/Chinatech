@@ -8,24 +8,36 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import useSWR from 'swr';
 import { 
   PhoneModel, 
   currentYear, 
-  initialCsvData, 
-  parseCSV, 
   storageTiers 
 } from './data';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function RecycleCalculator() {
   const t = useTranslations("Recycling");
   
+  // Data Fetching
+  const { data: apiData, error, isLoading } = useSWR<PhoneModel[]>('/api/recycling', fetcher);
+  
   // State
-  const [data, setData] = React.useState<PhoneModel[]>([]);
   const [selectedModel, setSelectedModel] = React.useState<PhoneModel | null>(null);
   const [selectedStorage, setSelectedStorage] = React.useState(storageTiers[0]);
   const [isScreenBroken, setIsScreenBroken] = React.useState(false);
   const [holdDays, setHoldDays] = React.useState(7);
-  
+
+  const data = apiData || [];
+
+  // Initial Data Load
+  React.useEffect(() => {
+    if (data.length > 0 && !selectedModel) {
+      setSelectedModel(data[0]);
+    }
+  }, [data, selectedModel]);
+
   // Options
   const conditionGrades = React.useMemo(() => [
     { id: 'A', label: t('cond_A'), deductionPercent: 0, color: "text-green-600", bg: "bg-green-50" },
@@ -44,13 +56,6 @@ export function RecycleCalculator() {
 
   const [selectedCondition, setSelectedCondition] = React.useState(conditionGrades[0]);
   const [selectedBattery, setSelectedBattery] = React.useState(batteryLevels[0]);
-
-  // Initial Data Load
-  React.useEffect(() => {
-    const parsedData = parseCSV(initialCsvData);
-    setData(parsedData);
-    if(parsedData.length > 0) setSelectedModel(parsedData[0]);
-  }, []);
 
   // Update selections when language changes
   React.useEffect(() => {

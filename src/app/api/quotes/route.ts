@@ -1,0 +1,248 @@
+import { db } from "@/lib/db";
+import { NextResponse } from "next/server";
+
+// Helper to convert Prisma result to API response format (snake_case)
+function toApiResponse(quote: any) {
+  return {
+    id: quote.id,
+    brand: quote.brand,
+    model: quote.model,
+    repair_id: quote.repairId,
+    repair_label: quote.repairLabel,
+    repair_type: quote.repairType,
+    quality: quote.quality,
+    price: quote.price,
+    warranty: quote.warranty,
+    count: quote.count,
+    is_unstable: quote.isUnstable,
+    price_spread: quote.priceSpread,
+    created_at: quote.createdAt,
+    updated_at: quote.updatedAt,
+  };
+}
+
+export async function GET() {
+  try {
+    const quotes = await db.quote.findMany({
+      orderBy: [
+        { brand: 'asc' },
+        { model: 'asc' },
+      ],
+    });
+    
+    return NextResponse.json(quotes.map(toApiResponse));
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  const url = new URL(request.url);
+  const replaceAll = url.searchParams.get("replace") === "true";
+  
+  try {
+    if (Array.isArray(body)) {
+      // Transaction for bulk operations
+      const result = await db.$transaction(async (tx) => {
+        // Delete all if replaceAll is true
+        if (replaceAll) {
+          await tx.quote.deleteMany({});
+        }
+
+        const upserted = [];
+        for (const item of body) {
+          const record = await tx.quote.upsert({
+            where: { repairId: item.repair_id },
+            update: {
+              brand: item.brand,
+              model: item.model,
+              repairLabel: item.repair_label,
+              repairType: item.repair_type,
+              quality: item.quality,
+              price: item.price,
+              warranty: item.warranty,
+              count: item.count,
+              isUnstable: item.is_unstable,
+              priceSpread: item.price_spread,
+            },
+            create: {
+              brand: item.brand,
+              model: item.model,
+              repairId: item.repair_id,
+              repairLabel: item.repair_label,
+              repairType: item.repair_type,
+              quality: item.quality,
+              price: item.price,
+              warranty: item.warranty,
+              count: item.count,
+              isUnstable: item.is_unstable,
+              priceSpread: item.price_spread,
+            },
+          });
+          upserted.push(record);
+        }
+        return upserted;
+      });
+      
+      return NextResponse.json(result.map(toApiResponse));
+    } else {
+      // Single insert
+      const item = body;
+      const record = await db.quote.create({
+        data: {
+          brand: item.brand,
+          model: item.model,
+          repairId: item.repair_id,
+          repairLabel: item.repair_label,
+          repairType: item.repair_type,
+          quality: item.quality,
+          price: item.price,
+          warranty: item.warranty,
+          count: item.count,
+          isUnstable: item.is_unstable,
+          priceSpread: item.price_spread,
+        },
+      });
+      
+      return NextResponse.json(toApiResponse(record));
+    }
+  } catch (error) {
+    console.error("POST Error:", error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  const body = await request.json();
+  const { id, brand, oldModel, newModel, oldBrand, newBrand, seriesModels, ...updates } = body;
+
+  try {
+    // Rename brand
+    if (oldBrand && newBrand) {
+      const result = await db.quote.updateMany({
+        where: { brand: oldBrand },
+        data: { brand: newBrand },
+      });
+      return NextResponse.json({ success: true, updated: result.count });
+    }
+
+    // Rename series (not implemented in original properly, but let's try)
+    if (brand && seriesModels && Array.isArray(seriesModels) && newModel) {
+      // This is complex in Prisma without raw SQL for string replacement
+      // We'll iterate
+      let totalUpdated = 0;
+      await db.$transaction(async (tx) => {
+        for (const oldModelName of seriesModels) {
+          // Logic: replace series prefix
+          const newModelName = oldModelName.replace(/^[^0-9]+/, newModel + ' ');
+          const result = await tx.quote.updateMany({
+            where: { brand, model: oldModelName },
+            data: { model: newModelName },
+          });
+          totalUpdated += result.count;
+        }
+      });
+      return NextResponse.json({ success: true, updated: totalUpdated });
+    }
+
+    // Rename model
+    if (brand && oldModel && newModel) {
+      const result = await db.quote.updateMany({
+        where: { brand, model: oldModel },
+        data: { model: newModel },
+      });
+      return NextResponse.json({ success: true, updated: result.count });
+    }
+
+    // Single record update
+    if (id) {
+      // Convert snake_case updates to camelCase if needed
+      // Actually updates usually contain specific fields. 
+      // The frontend sends `price`, `warranty` which match.
+      const updateData: any = { ...updates };
+      // Map fields if they exist in updates
+      if (updates.repair_label) updateData.repairLabel = updates.repair_label;
+      if (updates.repair_type) updateData.repairType = updates.repair_type;
+      if (updates.is_unstable !== undefined) updateData.isUnstable = updates.is_unstable;
+      if (updates.price_spread) updateData.priceSpread = updates.price_spread;
+
+      // Clean up snake_case keys
+      delete updateData.repair_label;
+      delete updateData.repair_type;
+      delete updateData.is_unstable;
+      delete updateData.price_spread;
+
+      // Find by repairId if id is not UUID (original code uses repair_id as id sometimes?)
+      // The original code: .eq("id", id) where id comes from r.id.
+      // In our schema, id is CUID, repairId is the CSV/System ID.
+      // Frontend sends `id` which maps to `r.id` which maps to `quote.repairId` (from convertFromDbRecords)
+      // Wait, let's check `utils.ts`: 
+      // map[key].repairs.push({ id: r.repair_id || r.id ... })
+      // So frontend ID is likely the repairId (CSV ID).
+      
+      // Try to find by id (CUID) or repairId
+      // But update requires unique input.
+      // Let's assume frontend sends the database ID if it exists, or repairId.
+      // Actually, looking at `convertFromDbRecords`:
+      // id: r.repair_id || r.id
+      // It prefers repair_id.
+      
+      // Let's try to update by repairId first
+      try {
+        const record = await db.quote.update({
+          where: { repairId: id },
+          data: updateData,
+        });
+        return NextResponse.json(toApiResponse(record));
+      } catch (e) {
+        // Fallback to id if repairId fails (maybe it is a CUID)
+        const record = await db.quote.update({
+          where: { id: id },
+          data: updateData,
+        });
+        return NextResponse.json(toApiResponse(record));
+      }
+    }
+
+    return NextResponse.json({ error: "Missing id or rename parameters" }, { status: 400 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  const brand = searchParams.get("brand");
+  const model = searchParams.get("model");
+  const repairId = searchParams.get("repair_id");
+
+  try {
+    if (repairId) {
+      await db.quote.delete({
+        where: { repairId: repairId },
+      });
+    } else if (brand && model) {
+      await db.quote.deleteMany({
+        where: { brand, model },
+      });
+    } else if (brand) {
+      await db.quote.deleteMany({
+        where: { brand },
+      });
+    } else if (id) {
+      await db.quote.delete({
+        where: { id },
+      });
+    } else {
+      // Delete all (dangerous!)
+      // Original code: .neq("id", "000...")
+      await db.quote.deleteMany({});
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}

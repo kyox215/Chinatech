@@ -40,3 +40,37 @@ model TicketPart {
 
   @@id([ticketId, partId])
 }
+
+// 报价系统模块
+model Quote {
+  id           String   @id @default(cuid())
+  brand        String
+  model        String
+  repairId     String   @unique @map("repair_id") // 原始CSV/系统中的唯一标识
+  repairLabel  String   @map("repair_label")
+  repairType   String   @map("repair_type") // screen, battery, other
+  quality      String   // orig, comp, altcap, standard
+  price        Float
+  warranty     String
+  count        Int      @default(0)
+  isUnstable   Boolean  @default(false) @map("is_unstable")
+  priceSpread  String?  @map("price_spread")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("quotes")
+}
+
+// 回收模块
+model RecycleModel {
+  id               String   @id @default(cuid())
+  model            String   @unique
+  screenPrice      Float    @map("screen_price")
+  batteryPrice     Float    @map("battery_price")
+  baseRecyclePrice Float    @map("base_recycle_price")
+  releaseYear      Int      @map("release_year")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("recycle_models")
+}
