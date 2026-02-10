@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Milan Repair Manager",
+  title: "ChinaTechOS",
   description: "A minimalist, plug-and-play repair management system",
 };
  

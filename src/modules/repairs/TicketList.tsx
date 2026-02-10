@@ -152,6 +152,62 @@ export function TicketList() {
   ];
 
   return (
-    <DataTable columns={columns} data={data} searchKey="customer" />
+    <>
+      <div className="md:hidden space-y-4">
+        {data.map((ticket) => (
+          <div key={ticket.id} className="bg-white rounded-lg border border-slate-200 p-4 space-y-3 shadow-sm">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="font-mono text-xs text-slate-500">{ticket.id}</span>
+                <h3 className="font-medium text-slate-900 mt-1">{ticket.customer}</h3>
+                <p className="text-sm text-slate-600">{ticket.device}</p>
+              </div>
+              <Badge 
+                  variant={
+                      ticket.status === "completed" ? "default" : 
+                      ticket.status === "in_progress" ? "secondary" : 
+                      "outline"
+                  }
+                  className={
+                      ticket.status === "completed" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200" :
+                      ticket.status === "in_progress" ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200" :
+                      "bg-slate-100 text-slate-700 hover:bg-slate-100 border-slate-200"
+                  }
+              >
+                {t(`status.${ticket.status}`)}
+              </Badge>
+            </div>
+            
+            <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
+              <div>
+                 <p className="text-sm text-slate-900">{ticket.issue}</p>
+                 <p className="font-mono text-sm text-slate-600 mt-1">{ticket.price}</p>
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{t("table.actions")}</DropdownMenuLabel>
+                  <DropdownMenuItem>
+                      <Eye className="mr-2 h-4 w-4" /> {t("table.viewDetails")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" /> {t("table.editTicket")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden md:block">
+        <DataTable columns={columns} data={data} searchKey="customer" />
+      </div>
+    </>
   )
 }

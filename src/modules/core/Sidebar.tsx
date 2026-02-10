@@ -3,7 +3,7 @@ import { LayoutDashboard, Wrench, Package, Settings, LogOut } from "lucide-react
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
-export function Sidebar() {
+export function Sidebar({ className }: { className?: string }) {
   const t = useTranslations("Sidebar");
 
   const navigation = [
@@ -14,13 +14,13 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-slate-950 text-slate-50">
+    <div className={cn("flex h-full w-full flex-col bg-slate-950 text-slate-50", className)}>
       <div className="flex h-16 items-center px-6">
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
           <div className="h-8 w-8 rounded bg-indigo-600 flex items-center justify-center">
-            <span className="text-white">M</span>
+            <span className="text-white">C</span>
           </div>
-          <span>Milan Repair</span>
+          <span>ChinaTechOS</span>
         </div>
       </div>
       
@@ -31,11 +31,11 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors",
+                "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors",
                 // Active state logic would go here
               )}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-6 w-6" />
               {item.name}
             </Link>
           ))}
@@ -43,8 +43,8 @@ export function Sidebar() {
       </div>
 
       <div className="p-4 border-t border-slate-800">
-        <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
-          <LogOut className="h-5 w-5" />
+        <button className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+          <LogOut className="h-6 w-6" />
           {t("signOut")}
         </button>
       </div>
