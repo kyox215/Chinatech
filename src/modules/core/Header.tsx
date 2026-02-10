@@ -19,11 +19,11 @@ export function Header() {
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-72 bg-slate-950 border-r-slate-800">
+          <SheetContent side="left" className="p-0 w-72 bg-white border-r-slate-200">
              <VisuallyHidden>
                 <SheetTitle>Menu</SheetTitle>
              </VisuallyHidden>
-            <Sidebar className="h-full" />
+            <Sidebar className="h-full border-none" />
           </SheetContent>
         </Sheet>
 
