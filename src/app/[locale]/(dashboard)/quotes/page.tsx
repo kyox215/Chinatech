@@ -54,50 +54,90 @@ export default function QuoteManagementPage() {
   });
 
   // Load data from API
-  const { data: dbData, error: dbError, isLoading } = useSWR<QuoteRecord[]>('/api/quotes', fetcher);
+  // API returns { data: QuoteRecord[], meta: ... }
+  const { data: responseData, error: dbError, isLoading } = useSWR<{ data: QuoteRecord[], meta: any }>('/api/quotes', fetcher);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
 
   // Convert DB data to app format when loaded (only on initial load)
   useEffect(() => {
-    if (dbData && dbData.length > 0 && !hasLoadedFromDb) {
-      console.log("Loading data from database:", dbData.length, "records");
-      const converted = convertFromDbRecords(dbData);
+    // Check if we have response data and it has the array in .data property
+    if (responseData && responseData.data && responseData.data.length > 0 && !hasLoadedFromDb) {
+      console.log("Loading data from database:", responseData.data.length, "records");
+      const converted = convertFromDbRecords(responseData.data);
       console.log("Converted to", converted.length, "models");
       setAppData(converted);
       setHasLoadedFromDb(true);
-    } else if (dbData && dbData.length === 0 && !hasLoadedFromDb) {
+    } else if (responseData && responseData.data && responseData.data.length === 0 && !hasLoadedFromDb) {
       console.log("No data in database");
       setHasLoadedFromDb(true);
     }
-  }, [dbData, hasLoadedFromDb]);
+  }, [responseData, hasLoadedFromDb]);
+
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // ... (previous filter and group logic)
 
   const saveToDatabase = async (data: ModelItem[], replaceAll: boolean = false) => {
     setIsSaving(true);
+    setUploadProgress(0);
+    setIsUploading(true);
+    
     try {
       const records = convertToDbRecords(data);
       console.log("Saving records to database:", records.length, "records", replaceAll ? "(replacing all)" : "(upsert)");
       
-      const url = replaceAll ? '/api/quotes?replace=true' : '/api/quotes';
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(records),
-      });
+      const CHUNK_SIZE = 50; // Use small chunks for Vercel/Serverless
+      const totalChunks = Math.ceil(records.length / CHUNK_SIZE);
+      let successCount = 0;
+
+      // If replacing all, we need to clear first (or handle in first request if API supports it)
+      // Since our API handles replace=true by deleting everything first, we can send the first chunk with replace=true
+      // and subsequent chunks with replace=false (upsert).
+      // However, concurrent requests might be safer if we just upsert, but we want to clear old data if replaceAll is true.
+      // Strategy: 
+      // 1. If replaceAll, send first chunk with replace=true.
+      // 2. Send remaining chunks with replace=false.
       
-      const result = await response.json();
-      console.log("Save response:", response.status, result);
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Save failed');
+      for (let i = 0; i < records.length; i += CHUNK_SIZE) {
+        const chunk = records.slice(i, i + CHUNK_SIZE);
+        const isFirstChunk = i === 0;
+        
+        // Determine mode
+        let url = '/api/quotes';
+        if (replaceAll) {
+          if (isFirstChunk) {
+            url += '?replace=true';
+          } else {
+            // For subsequent chunks in "replace all" mode, use fast insert
+            url += '?mode=insert';
+          }
+        }
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(chunk),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Batch ${i/CHUNK_SIZE + 1} failed`);
+        }
+        
+        successCount += chunk.length;
+        setUploadProgress(Math.round((successCount / records.length) * 100));
       }
       
       mutate('/api/quotes');
-      alert(`成功保存 ${records.length} 条记录到数据库！`);
+      alert(`成功保存 ${successCount} 条记录到数据库！`);
     } catch (error) {
       console.error('Failed to save:', error);
       alert('保存失败: ' + (error instanceof Error ? error.message : '未知错误'));
     } finally {
       setIsSaving(false);
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -345,6 +385,7 @@ export default function QuoteManagementPage() {
           searchQuery={searchQuery}
           isSaving={isSaving}
           isLoading={isLoading}
+          uploadProgress={uploadProgress}
           onFileImport={handleFileImport}
           onExport={handleExport}
           onSave={() => saveToDatabase(appData)}
