@@ -1,5 +1,5 @@
 // scripts/test-regression.js
-const BASE_URL = 'http://localhost:3000/api/quotes';
+const BASE_URL = 'http://localhost:3001/api/quotes';
 
 async function testRegression() {
   console.log('🚀 Starting Regression Testing (Post-SmartCorrect Removal)...');

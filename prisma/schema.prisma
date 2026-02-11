@@ -55,6 +55,10 @@ model Quote {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("quotes")
+  @@index([brand])
+  @@index([model])
+  @@index([repairType])
+  @@index([brand, model])
 }
 
 model RecycleModel {

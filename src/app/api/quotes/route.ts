@@ -1,3 +1,4 @@
+import { QuoteService } from "@/services/quotes";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
@@ -25,52 +26,21 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "0"); // 0 means all (default for backward compatibility)
-    const brand = searchParams.get("brand");
-    const search = searchParams.get("search");
+    const limit = parseInt(searchParams.get("limit") || "0");
+    const brand = searchParams.get("brand") || undefined;
+    const search = searchParams.get("search") || undefined;
+    const currency = searchParams.get("currency") || 'EUR';
     
-    // Build where clause
-    const where: any = {};
-    if (brand && brand !== 'all') {
-      where.brand = { equals: brand, mode: 'insensitive' };
-    }
-    if (search) {
-      where.OR = [
-        { model: { contains: search, mode: 'insensitive' } },
-        { repairLabel: { contains: search, mode: 'insensitive' } },
-        { repairId: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    // Calculate pagination
-    const skip = (page - 1) * (limit > 0 ? limit : 0);
-    const take = limit > 0 ? limit : undefined;
-
-    // Execute query with cache headers
-    const [quotes, total] = await Promise.all([
-      db.quote.findMany({
-        where,
-        orderBy: [
-          { brand: 'asc' },
-          { model: 'asc' },
-        ],
-        skip,
-        take,
-      }),
-      db.quote.count({ where }),
-    ]);
-    
-    const response = NextResponse.json({
-      data: quotes.map(toApiResponse),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: limit > 0 ? Math.ceil(total / limit) : 1,
-      }
+    const result = await QuoteService.getQuotes({
+      page,
+      limit,
+      brand,
+      search,
+      currency
     });
-
-    // Add Cache-Control header (e.g., cache for 60 seconds)
+    
+    const response = NextResponse.json(result);
+    // Cache control is handled by the service (internal cache), but we can also set browser cache
     response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     
     return response;
@@ -186,6 +156,7 @@ export async function POST(request: Request) {
         timeout: 20000  // 20s timeout
       });
       
+      await QuoteService.invalidateCache();
       return NextResponse.json(result);
     } else {
       // Single insert
@@ -206,6 +177,7 @@ export async function POST(request: Request) {
         },
       });
       
+      await QuoteService.invalidateCache();
       return NextResponse.json(toApiResponse(record));
     }
   } catch (error: any) {
@@ -232,6 +204,7 @@ export async function PUT(request: Request) {
         where: { brand: oldBrand },
         data: { brand: newBrand },
       });
+      await QuoteService.invalidateCache();
       return NextResponse.json({ success: true, updated: result.count });
     }
 
@@ -251,6 +224,7 @@ export async function PUT(request: Request) {
           totalUpdated += result.count;
         }
       });
+      await QuoteService.invalidateCache();
       return NextResponse.json({ success: true, updated: totalUpdated });
     }
 
@@ -260,6 +234,7 @@ export async function PUT(request: Request) {
         where: { brand, model: oldModel },
         data: { model: newModel },
       });
+      await QuoteService.invalidateCache();
       return NextResponse.json({ success: true, updated: result.count });
     }
 
@@ -302,6 +277,7 @@ export async function PUT(request: Request) {
           where: { repairId: id },
           data: updateData,
         });
+        await QuoteService.invalidateCache();
         return NextResponse.json(toApiResponse(record));
       } catch (e) {
         // Fallback to id if repairId fails (maybe it is a CUID)
@@ -309,6 +285,7 @@ export async function PUT(request: Request) {
           where: { id: id },
           data: updateData,
         });
+        await QuoteService.invalidateCache();
         return NextResponse.json(toApiResponse(record));
       }
     }
@@ -349,6 +326,7 @@ export async function DELETE(request: Request) {
       await db.quote.deleteMany({});
     }
 
+    await QuoteService.invalidateCache();
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
