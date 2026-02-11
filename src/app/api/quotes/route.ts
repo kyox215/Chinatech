@@ -1,6 +1,13 @@
 import { QuoteService } from "@/services/quotes";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
+
+// Debug env vars (safe check)
+const hasDbUrl = !!(process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL_NON_POOLING);
+if (!hasDbUrl) {
+  console.warn("WARNING: No database connection string found in environment variables!");
+}
 
 // Helper to convert Prisma result to API response format (snake_case)
 function toApiResponse(quote: any) {
@@ -193,12 +200,18 @@ export async function POST(request: Request) {
     }
   } catch (error: any) {
     console.error("POST /api/quotes Error:", error);
+    
+    // Check for Prisma known errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error(`Prisma Error Code: ${error.code}, Message: ${error.message}, Meta:`, error.meta);
+    }
+
     // Enhanced error logging
     const errorDetails = {
       message: error.message,
       code: error.code,
       meta: error.meta,
-      stack: error.stack
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     };
     return NextResponse.json({ error: "Database operation failed", details: errorDetails }, { status: 500 });
   }
