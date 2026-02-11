@@ -5,7 +5,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import useSWR from 'swr';
 import { PhoneModel } from './types';
-import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer, ChevronDown, ChevronUp } from 'lucide-react';
+import { Smartphone, Battery, AlertTriangle, ShieldAlert, ArrowRight, Printer, ChevronDown, ChevronUp, Loader2, CheckCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { initialCsvData, parseCSV, storageTiers, currentYear } from './data';
 
@@ -61,6 +61,8 @@ export function RecycleCalculator() {
   const [selectedCondition, setSelectedCondition] = React.useState(conditionGrades[0]);
   const [selectedBattery, setSelectedBattery] = React.useState(batteryLevels[0]);
   const [isMobilePanelExpanded, setIsMobilePanelExpanded] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [orderResult, setOrderResult] = React.useState<any>(null);
 
   // Initial Data Load
   React.useEffect(() => {
@@ -152,6 +154,82 @@ export function RecycleCalculator() {
   // Forecast next month price
   const nextMonthPrice = Math.floor(finalQuote * (1 - depInfo.monthlyRate));
 
+  const handleConfirm = async () => {
+    if (!selectedModel || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        model: selectedModel.model,
+        storage: selectedStorage.label,
+        condition: selectedCondition.id,
+        battery: selectedBattery.label,
+        screen: isScreenBroken,
+        price: finalQuote
+      };
+
+      const res = await fetch('/api/recycling/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Failed to create order');
+      
+      const data = await res.json();
+      setOrderResult(data);
+    } catch (error) {
+      console.error("Order failed:", error);
+      alert("Failed to create order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (orderResult) {
+    return (
+      <div className="max-w-2xl mx-auto p-8 text-center animate-in fade-in zoom-in duration-300">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
+          <div className="flex justify-center mb-6">
+            <CheckCircle className="h-20 w-20 text-green-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('orderSuccess') || "Order Confirmed!"}</h2>
+          <p className="text-slate-500 mb-6">Order #{orderResult.orderNo}</p>
+          
+          <div className="bg-slate-50 rounded-xl p-6 mb-8 text-left space-y-3">
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-500">Model</span>
+              <span className="font-bold">{orderResult.model} ({orderResult.storage})</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-500">Price</span>
+              <span className="font-bold text-xl">€{orderResult.price}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            <button 
+              onClick={() => window.print()}
+              className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all"
+            >
+              <Printer className="h-5 w-5" />
+              {t('printReceipt')}
+            </button>
+            <button 
+              onClick={() => {
+                setOrderResult(null);
+                setSelectedModel(null); // Reset
+              }}
+              className="px-6 py-3 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all"
+            >
+              New Calculation
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) return (
     <div className="p-8 text-center">
       <div className="text-red-500 font-bold mb-2">Error loading data</div>
@@ -227,10 +305,14 @@ export function RecycleCalculator() {
                     >
                        {isMobilePanelExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                     </button>
-                    <button className="bg-slate-900 hover:bg-slate-800 text-white px-3 sm:px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2 transition-all duration-200 flex-shrink-0 transform hover:-translate-y-0.5">
-                        <Printer className="h-4 w-4" />
+                    <button 
+                        onClick={handleConfirm}
+                        disabled={isSubmitting}
+                        className="bg-slate-900 hover:bg-slate-800 text-white px-3 sm:px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2 transition-all duration-200 flex-shrink-0 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
                         {/* Hide text on very small screens (<360px) to prevent overflow */}
-                        <span className="hidden min-[360px]:inline">{t('confirmDeal')}</span>
+                        <span className="hidden min-[360px]:inline">{isSubmitting ? "..." : t('confirmDeal')}</span>
                     </button>
                 </div>
             </div>
@@ -491,12 +573,25 @@ export function RecycleCalculator() {
                     </div>
 
                     <div className="mt-auto relative z-10 pt-6 shrink-0">
-                        <button className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 group transition-all duration-200">
-                            <span className="group-hover:hidden">{t('confirmDeal')}</span>
-                            <span className="hidden group-hover:inline flex items-center gap-2">
-                                <Printer className="h-5 w-5" /> {t('printReceipt')}
-                            </span>
-                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        <button 
+                            onClick={handleConfirm}
+                            disabled={isSubmitting}
+                            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 group transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="group-hover:hidden">{t('confirmDeal')}</span>
+                                    <span className="hidden group-hover:inline flex items-center gap-2">
+                                        <Printer className="h-5 w-5" /> {t('printReceipt')}
+                                    </span>
+                                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>

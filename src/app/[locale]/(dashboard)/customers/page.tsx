@@ -1,11 +1,11 @@
 
 import { PageShell } from "@/modules/shared/PageShell";
 import { SectionCard } from "@/modules/shared/SectionCard";
-import { RepairOrderList } from "@/modules/repairs/RepairOrderList";
+import { CustomerList } from "@/modules/customers/CustomerList";
 import { useTranslations } from "next-intl";
 
-export default function RepairsPage() {
-  const t = useTranslations("Repairs");
+export default function CustomersPage() {
+  const t = useTranslations("Customers");
 
   return (
     <PageShell
@@ -13,7 +13,7 @@ export default function RepairsPage() {
       description={t("description")}
     >
       <SectionCard>
-        <RepairOrderList />
+        <CustomerList />
       </SectionCard>
     </PageShell>
   );

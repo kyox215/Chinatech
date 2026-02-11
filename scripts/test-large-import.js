@@ -25,27 +25,43 @@ async function testLargeImport() {
 
   console.log(`Generated ${data.length} records. Payload size approx: ${(JSON.stringify(data).length / 1024 / 1024).toFixed(2)} MB`);
 
+  const CHUNK_SIZE = 50;
+  let successCount = 0;
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for whole process
 
-    const res = await fetch(`${BASE_URL}?replace=true`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
+    for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+      const chunk = data.slice(i, i + CHUNK_SIZE);
+      const isFirstChunk = i === 0;
+      
+      // Send replace=true only for first chunk, mode=insert for others
+       let url = BASE_URL;
+       if (isFirstChunk) {
+         url += '?replace=true';
+       } else {
+         url += '?mode=insert';
+       }
+       
+       console.log(`Sending chunk ${i/CHUNK_SIZE + 1}/${Math.ceil(data.length/CHUNK_SIZE)} (${chunk.length} items) to ${url}...`);
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(`❌ Import failed: ${res.status} ${res.statusText}`);
-      console.error(`Response: ${text}`);
-      return;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(chunk),
+        signal: controller.signal
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Chunk failed: ${res.status} ${res.statusText}`);
+      }
+      
+      successCount += chunk.length;
     }
 
-    const result = await res.json();
-    console.log('✅ Import successful:', result);
+    clearTimeout(timeoutId);
+    console.log(`✅ Import successful: ${successCount} records.`);
 
   } catch (error) {
     console.error('❌ Network or Fetch Error:', error);

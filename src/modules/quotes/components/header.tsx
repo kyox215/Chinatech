@@ -12,6 +12,7 @@ interface HeaderProps {
   searchQuery: string;
   isSaving?: boolean;
   isLoading?: boolean;
+  uploadProgress?: number;
   onFileImport: (file: File) => void;
   onExport: () => void;
   onSave?: () => void;
@@ -39,6 +40,7 @@ export function Header({
   searchQuery,
   isSaving,
   isLoading,
+  uploadProgress,
   onFileImport,
   onExport,
   onSave,
@@ -76,7 +78,11 @@ export function Header({
               ) : isSaving ? (
                 <>
                   <Loader2 className="w-3 h-3 text-amber-500 animate-spin" />
-                  <p className="text-xs text-amber-500">保存中...</p>
+                  <p className="text-xs text-amber-500">
+                    {uploadProgress !== undefined && uploadProgress > 0 
+                      ? `导入中 ${uploadProgress}%...` 
+                      : '保存中...'}
+                  </p>
                 </>
               ) : (
                 <>

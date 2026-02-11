@@ -1,0 +1,3 @@
+Brand,Model,Repair Item,Quality,Price,Warranty,repair_id
+TEST_BRAND,Test Model 1,Screen Replacement,Original,100,12 Months,test-repair-1
+TEST_BRAND,Test Model 2,Battery Replacement,Original,50,6 Months,test-repair-2
