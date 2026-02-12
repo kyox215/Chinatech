@@ -66,6 +66,7 @@ model Quote {
   @@index([model])
   @@index([repairType])
   @@index([brand, model])
+  @@index([repairId]) // Added index for repairId lookups
   @@unique([brand, model, repairLabel, quality])
 }
 

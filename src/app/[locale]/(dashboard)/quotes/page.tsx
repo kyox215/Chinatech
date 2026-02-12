@@ -10,7 +10,7 @@ export default async function QuotePage() {
   // In a larger app, we would move filtering to the server, but to retain 
   // the exact current functionality (grouping by brand, etc.), we fetch all.
   const { data } = await quoteService.getQuotes({ 
-    limit: 10000, 
+    limit: 0, // 0 means fetch all
     currency: "EUR" 
   });
 

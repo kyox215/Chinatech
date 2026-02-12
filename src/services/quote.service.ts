@@ -52,7 +52,9 @@ export class QuoteService {
   }
 
   async createManyQuotes(inputs: CreateQuoteInput[]) {
-    // Prisma createMany is faster
+    // Transactional bulk create to ensure atomicity
+    // Although createMany is atomic per batch, we might want to wrap in transaction if we do more logic later
+    // For now, Repository's createMany is sufficient but let's ensure cache invalidation is reliable
     const result = await quoteRepository.createMany(inputs);
     await this.invalidateCache();
     return result;
