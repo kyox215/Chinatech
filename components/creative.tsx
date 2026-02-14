@@ -377,61 +377,6 @@ const sidebarItems = [
       { title: "回收报价", url: "#recycling", badge: "New", value: "recycling" },
     ],
   },
-  {
-    title: "文件",
-    icon: <FileText />,
-    value: "files",
-    items: [
-      { title: "最近文件", url: "#files" },
-      { title: "与我共享", url: "#files", badge: "3" },
-      { title: "收藏", url: "#files" },
-      { title: "回收站", url: "#files" },
-    ],
-  },
-  {
-    title: "项目",
-    icon: <Layers />,
-    value: "projects",
-    badge: "4",
-    items: [
-      { title: "进行中", url: "#projects", badge: "4" },
-      { title: "已归档", url: "#projects" },
-      { title: "模板", url: "#projects" },
-    ],
-  },
-  {
-    title: "学习",
-    icon: <BookOpen />,
-    value: "learn",
-    items: [
-      { title: "教程", url: "#learn" },
-      { title: "课程", url: "#learn" },
-      { title: "网络研讨会", url: "#learn" },
-      { title: "资源", url: "#learn" },
-    ],
-  },
-  {
-    title: "社区",
-    icon: <Users />,
-    value: "community", // Placeholder, no tab content yet
-    items: [
-      { title: "发现", url: "#" },
-      { title: "关注", url: "#" },
-      { title: "挑战", url: "#" },
-      { title: "活动", url: "#" },
-    ],
-  },
-  {
-    title: "素材",
-    icon: <Bookmark />,
-    value: "assets", // Placeholder
-    items: [
-      { title: "图库", url: "#" },
-      { title: "字体", url: "#" },
-      { title: "图标", url: "#" },
-      { title: "模板", url: "#" },
-    ],
-  },
 ]
 
 /*
@@ -451,6 +396,7 @@ export function DesignaliCreative() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+  const [showMainHeader, setShowMainHeader] = useState(true)
 
   // Simulate progress loading
   useEffect(() => {
@@ -526,13 +472,13 @@ export function DesignaliCreative() {
 
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+        <div className="fixed inset-0 z-[90] bg-black/50 md:hidden" onClick={() => setMobileMenuOpen(false)} />
       )}
 
       {/* Sidebar - Mobile */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 transform bg-background transition-transform duration-300 ease-in-out md:hidden",
+          "fixed inset-y-0 left-0 z-[100] w-64 transform bg-background transition-transform duration-300 ease-in-out md:hidden",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -651,7 +597,7 @@ export function DesignaliCreative() {
       {/* Sidebar - Desktop */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden w-64 transform border-r bg-background transition-transform duration-300 ease-in-out md:block",
+          "fixed inset-y-0 left-0 z-[100] hidden w-64 transform border-r bg-background transition-transform duration-300 ease-in-out md:block",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -765,7 +711,14 @@ export function DesignaliCreative() {
 
       {/* Main Content */}
       <div className={cn("min-h-screen transition-all duration-300 ease-in-out", sidebarOpen ? "md:pl-64" : "md:pl-0")}>
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+        <motion.header 
+          className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background/95 px-4 backdrop-blur overflow-hidden"
+          animate={{ 
+            height: showMainHeader ? "4rem" : "0rem",
+            opacity: showMainHeader ? 1 : 0
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
@@ -838,7 +791,7 @@ export function DesignaliCreative() {
               </Avatar>
             </div>
           </div>
-        </header>
+        </motion.header>
 
         <main className="flex-1 p-4 md:p-6">
           <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -1632,7 +1585,7 @@ export function DesignaliCreative() {
                 </TabsContent>
 
                 <TabsContent value="recycling" className="space-y-8 mt-0 h-[calc(100dvh-5rem)]">
-                  <RecyclingApp />
+                  <RecyclingApp setMainHeaderVisible={setShowMainHeader} />
                 </TabsContent>
               </motion.div>
             </AnimatePresence>

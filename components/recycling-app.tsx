@@ -10,9 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { Battery, Smartphone, AlertTriangle, TrendingDown, Calendar, ArrowRight, Printer, ShieldAlert } from 'lucide-react';
+import { Battery, Smartphone, AlertTriangle, TrendingDown, Calendar, ArrowRight, Printer, ShieldAlert, ChevronUp, ChevronDown } from 'lucide-react';
 
 import { supabase } from '@/lib/supabase';
+import { motion } from 'framer-motion';
 
 const currentYear = 2026;
 
@@ -48,7 +49,7 @@ const batteryLevels = [
     { label: "< 80% / 维修", desc: "必需更换", type: 'fixed', value: 1.0 }
 ];
 
-export function RecyclingApp() {
+export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: (visible: boolean) => void }) {
     const [data, setData] = React.useState<IPhoneModel[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [selectedModel, setSelectedModel] = React.useState<IPhoneModel | null>(null);
@@ -57,6 +58,21 @@ export function RecyclingApp() {
     const [selectedBattery, setSelectedBattery] = React.useState(batteryLevels[0]);
     const [isScreenBroken, setIsScreenBroken] = React.useState(false);
     const [holdDays, setHoldDays] = React.useState(7);
+    const [showAppHeader, setShowAppHeader] = React.useState(true);
+    const [isWidgetExpanded, setIsWidgetExpanded] = React.useState(false);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const scrollTop = e.currentTarget.scrollTop;
+        const isTop = scrollTop <= 20;
+        
+        // Update local header state
+        setShowAppHeader(isTop);
+        
+        // Update main header state if prop provided
+        if (setMainHeaderVisible) {
+            setMainHeaderVisible(isTop);
+        }
+    };
 
     React.useEffect(() => {
         async function fetchModels() {
@@ -157,7 +173,17 @@ export function RecyclingApp() {
 
     return (
         <div className="flex flex-1 flex-col gap-4 pt-0 h-full overflow-hidden">
-            <header className="flex items-center justify-between py-4">
+            <motion.header 
+                className="flex items-center justify-between py-4 overflow-hidden"
+                animate={{ 
+                    height: showAppHeader ? "auto" : 0,
+                    opacity: showAppHeader ? 1 : 0,
+                    marginBottom: showAppHeader ? "1rem" : 0,
+                    paddingTop: showAppHeader ? "1rem" : 0,
+                    paddingBottom: showAppHeader ? "1rem" : 0
+                }}
+                transition={{ duration: 0.3 }}
+            >
                 <div className="flex items-center gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">智能回收报价系统</h1>
@@ -167,12 +193,15 @@ export function RecyclingApp() {
                 <div className="flex items-center gap-2">
                      <Badge variant="outline" className="font-mono">{currentYear} 年度版</Badge>
                 </div>
-            </header>
+            </motion.header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full overflow-hidden">
                 
                 {/* 左侧配置区 (Left Column) */}
-                <div className="lg:col-span-8 flex flex-col gap-6 overflow-y-auto pb-10 pr-2">
+                <div 
+                    className="lg:col-span-8 flex flex-col gap-6 overflow-y-auto pb-32 lg:pb-10 pr-2 h-full"
+                    onScroll={handleScroll}
+                >
                     
                     {/* 1. 机型配置 */}
                     <Card>
@@ -357,8 +386,8 @@ export function RecyclingApp() {
 
                 </div>
 
-                {/* 右侧报价单 (Right Column - Sticky) */}
-                <div className="lg:col-span-4 h-full">
+                {/* 右侧报价单 (Desktop Only) */}
+                <div className="hidden lg:block lg:col-span-4 h-full">
                     <Card className="h-auto sticky top-4 shadow-lg flex flex-col border-border/60">
                         <CardHeader className="pb-4 border-b bg-muted/10 text-center">
                             <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">最终安全收货价</CardTitle>
@@ -418,6 +447,71 @@ export function RecyclingApp() {
                     </Card>
                 </div>
 
+            </div>
+
+            {/* Mobile Floating Widget */}
+            <div className="lg:hidden fixed bottom-4 left-4 right-4 z-50">
+                <div className="bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl overflow-hidden">
+                    {/* Collapsible Details */}
+                    {isWidgetExpanded && (
+                        <div className="p-4 space-y-2 text-xs border-b bg-muted/30 max-h-[40vh] overflow-y-auto animate-in slide-in-from-bottom-5">
+                            <div className="flex justify-between text-muted-foreground py-1">
+                                <span>基准回收价</span>
+                                <span className="font-mono text-foreground font-medium">¥ {basePrice}</span>
+                            </div>
+                            
+                            {depreciationCost > 0 && (
+                                <div className="flex justify-between text-red-600 py-1 border-b border-dashed border-red-200">
+                                    <span>库存风控 ({holdDays}天)</span>
+                                    <span className="font-mono">- {depreciationCost}</span>
+                                </div>
+                            )}
+                            
+                            {selectedBattery.value > 0 && (
+                                <div className="flex justify-between text-blue-600 py-1 border-b border-dashed border-blue-200">
+                                    <span>电池损耗</span>
+                                    <span className="font-mono">- {selectedBattery.type==='percent' ? Math.floor(basePrice*selectedBattery.value) : selectedModel?.batteryPrice}</span>
+                                </div>
+                            )}
+                            
+                            {selectedCondition.deductionPercent > 0 && (
+                                <div className="flex justify-between text-orange-600 py-1 border-b border-dashed border-orange-200">
+                                    <span>外观损耗 ({selectedCondition.id}级)</span>
+                                    <span className="font-mono">- {Math.floor(basePrice * selectedCondition.deductionPercent)}</span>
+                                </div>
+                            )}
+                            
+                            {isScreenBroken && selectedModel && (
+                                <div className="flex justify-between text-red-600 py-1 border-b border-dashed border-red-200">
+                                    <span>屏幕残值扣除</span>
+                                    <span className="font-mono">- {selectedModel.screenPrice}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Main Bar */}
+                    <div className="flex items-center justify-between p-3 pl-4">
+                        <div className="flex flex-col gap-0.5" onClick={() => setIsWidgetExpanded(!isWidgetExpanded)}>
+                            <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
+                                最终报价
+                                {isWidgetExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                            </div>
+                            <div className="flex items-end gap-2">
+                                <div className="flex items-baseline text-green-600">
+                                    <span className="text-lg font-bold">¥</span>
+                                    <span className="text-3xl font-extrabold tracking-tight leading-none">{finalQuote}</span>
+                                </div>
+                                <div className="text-[10px] text-muted-foreground mb-1 flex items-center bg-muted px-1.5 py-0.5 rounded-full">
+                                    下月 ¥{nextMonthPrice} <TrendingDown className="w-2.5 h-2.5 ml-0.5 text-red-500" />
+                                </div>
+                            </div>
+                        </div>
+                        <Button className="h-10 rounded-xl px-6 bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-600/20 font-bold">
+                            成交 <ArrowRight className="w-4 h-4 ml-1" />
+                        </Button>
+                    </div>
+                </div>
             </div>
         </div>
     );
