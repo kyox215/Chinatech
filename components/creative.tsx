@@ -47,6 +47,7 @@ import {
   CuboidIcon,
   X,
   ChevronRight,
+  Wrench,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -61,6 +62,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils"
 
 import { RecyclingApp } from "@/components/recycling-app"
+import { RepairApp } from "@/components/repair-app"
 
 // Sample data for apps
 const apps = [
@@ -375,6 +377,7 @@ const sidebarItems = [
     value: "apps",
     items: [
       { title: "回收报价", url: "#recycling", badge: "New", value: "recycling" },
+      { title: "维修报价", url: "#repair", badge: "Hot", value: "repair" },
     ],
   },
 ]
@@ -1043,6 +1046,31 @@ export function DesignaliCreative() {
                           </CardFooter>
                         </Card>
                       </motion.div>
+
+                      <motion.div whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }}>
+                        <Card 
+                            className="overflow-hidden rounded-3xl border hover:border-primary/50 transition-all duration-300 cursor-pointer"
+                            onClick={() => handleSidebarClick("repair", false, "")}
+                        >
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+                                <Wrench className="h-6 w-6" />
+                              </div>
+                              <Badge className="rounded-xl bg-amber-600">查询</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pb-2">
+                            <CardTitle className="text-lg">维修报价</CardTitle>
+                            <CardDescription>快速查询手机维修价格与保修信息</CardDescription>
+                          </CardContent>
+                          <CardFooter>
+                            <Button variant="secondary" className="w-full rounded-2xl">
+                              打开
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      </motion.div>
                     </div>
                   </section>
                 </TabsContent>
@@ -1586,6 +1614,10 @@ export function DesignaliCreative() {
 
                 <TabsContent value="recycling" className="space-y-8 mt-0 h-[calc(100dvh-5rem)]">
                   <RecyclingApp setMainHeaderVisible={setShowMainHeader} />
+                </TabsContent>
+
+                <TabsContent value="repair" className="space-y-8 mt-0 h-[calc(100dvh-5rem)]">
+                  <RepairApp setMainHeaderVisible={setShowMainHeader} />
                 </TabsContent>
               </motion.div>
             </AnimatePresence>

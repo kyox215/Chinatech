@@ -56,7 +56,7 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
     const [selectedStorage, setSelectedStorage] = React.useState(storageTiers[0]);
     const [selectedCondition, setSelectedCondition] = React.useState(conditionGrades[0]);
     const [selectedBattery, setSelectedBattery] = React.useState(batteryLevels[0]);
-    const [isScreenBroken, setIsScreenBroken] = React.useState(false);
+    const [screenCondition, setScreenCondition] = React.useState<'perfect' | 'minor_scratches' | 'major_scratches' | 'broken'>('perfect');
     const [holdDays, setHoldDays] = React.useState(7);
     const [showAppHeader, setShowAppHeader] = React.useState(true);
     const [isWidgetExpanded, setIsWidgetExpanded] = React.useState(false);
@@ -149,7 +149,13 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
         }
 
         // 4. 扣屏幕
-        if (isScreenBroken) price -= selectedModel.screenPrice;
+        if (screenCondition === 'broken') {
+            price -= selectedModel.screenPrice;
+        } else if (screenCondition === 'major_scratches') {
+            price -= selectedModel.screenPrice * 0.4; // 严重划痕扣除屏幕价值的40%
+        } else if (screenCondition === 'minor_scratches') {
+            price -= selectedModel.screenPrice * 0.15; // 轻微刮痕扣除屏幕价值的15%
+        }
 
         // 5. 扣时间/库存风险 (Depreciation)
         const { monthlyRate } = getDepreciationInfo();
@@ -199,32 +205,32 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
                 
                 {/* 左侧配置区 (Left Column) */}
                 <div 
-                    className="lg:col-span-8 flex flex-col gap-6 overflow-y-auto pb-32 lg:pb-10 pr-2 h-full"
+                    className="lg:col-span-8 flex flex-col gap-3 lg:gap-6 overflow-y-auto pb-32 lg:pb-10 pr-2 h-full"
                     onScroll={handleScroll}
                 >
                     
                     {/* 1. 机型配置 */}
                     <Card>
-                        <CardHeader className="pb-3">
+                        <CardHeader className="pb-2 p-3 lg:p-6">
                             <div className="flex items-center justify-between">
-                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                                <CardTitle className="text-sm lg:text-base font-bold flex items-center gap-2">
                                     <Smartphone className="w-4 h-4" /> 1. 机型配置
                                 </CardTitle>
                                 {selectedModel && (
-                                    <Badge variant={depInfo.badgeVariant}>
-                                        {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%/月)
+                                    <Badge variant={depInfo.badgeVariant} className="text-[10px] lg:text-xs px-1 py-0 h-5">
+                                        {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%)
                                     </Badge>
                                 )}
                             </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>选择机型</Label>
+                        <CardContent className="space-y-3 p-3 pt-0 lg:p-6 lg:pt-0">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs lg:text-sm">选择机型</Label>
                                 <Select 
                                     value={selectedModel?.model} 
                                     onValueChange={(val) => setSelectedModel(data.find(m => m.model === val) || null)}
                                 >
-                                    <SelectTrigger className="w-full text-lg font-medium h-12">
+                                    <SelectTrigger className="w-full text-base lg:text-lg font-medium h-10 lg:h-12">
                                         <SelectValue placeholder="请选择 iPhone 机型" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -235,14 +241,15 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
                                 </Select>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label>存储容量</Label>
-                                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs lg:text-sm">存储容量</Label>
+                                <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
                                     {storageTiers.map((tier) => (
                                         <Button
                                             key={tier.label}
                                             variant={selectedStorage.value === tier.value ? "default" : "outline"}
-                                            className={cn("w-full transition-all", selectedStorage.value === tier.value && "ring-2 ring-primary ring-offset-2")}
+                                            size="sm"
+                                            className={cn("w-full transition-all h-8 lg:h-10 text-xs lg:text-sm", selectedStorage.value === tier.value && "ring-2 ring-primary ring-offset-2")}
                                             onClick={() => setSelectedStorage(tier)}
                                         >
                                             {tier.label.split('/')[0]}
@@ -255,19 +262,19 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
 
                     {/* 2. 风险控制 (Risk Control) */}
                     <Card className="border-l-4 border-l-primary">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base font-bold flex items-center gap-2">
-                                <TrendingDown className="w-4 h-4" /> 2. 库存风控 (时间贬值)
+                        <CardHeader className="pb-2 p-3 lg:p-6">
+                            <CardTitle className="text-sm lg:text-base font-bold flex items-center gap-2">
+                                <TrendingDown className="w-4 h-4" /> 2. 库存风控
                             </CardTitle>
-                            <CardDescription>
+                            <CardDescription className="text-xs lg:text-sm hidden sm:block">
                                 预计持有/周转天数。持有时间越长，跌价风险越高。
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex justify-between items-end">
-                                <Label className="text-base">预计售出周期</Label>
-                                <div className="text-2xl font-bold font-mono">
-                                    {holdDays} <span className="text-sm font-normal text-muted-foreground">天</span>
+                        <CardContent className="space-y-4 p-3 pt-0 lg:p-6 lg:pt-0">
+                            <div className="flex justify-between items-center">
+                                <Label className="text-xs lg:text-base">预计售出周期</Label>
+                                <div className="text-lg lg:text-2xl font-bold font-mono">
+                                    {holdDays} <span className="text-xs lg:text-sm font-normal text-muted-foreground">天</span>
                                 </div>
                             </div>
                             
@@ -277,18 +284,18 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
                                 step={1} 
                                 value={[holdDays]}
                                 onValueChange={(val) => setHoldDays(val[0])}
-                                className="py-4"
+                                className="py-2"
                             />
                             
-                            <div className="flex justify-between text-xs text-muted-foreground font-mono">
+                            <div className="flex justify-between text-[10px] lg:text-xs text-muted-foreground font-mono">
                                 <span>0 天 (秒出)</span>
                                 <span>30 天 (月转)</span>
                                 <span>60 天 (滞销)</span>
                             </div>
 
                             {depreciationCost > 0 && (
-                                <div className="bg-destructive/10 text-destructive p-3 rounded-md flex justify-between items-center text-sm">
-                                    <span className="flex items-center gap-2"><ShieldAlert className="w-4 h-4"/> 库存跌价风险预扣</span>
+                                <div className="bg-destructive/10 text-destructive p-2 lg:p-3 rounded-md flex justify-between items-center text-xs lg:text-sm">
+                                    <span className="flex items-center gap-1"><ShieldAlert className="w-3 h-3 lg:w-4 lg:h-4"/> 库存风险预扣</span>
                                     <span className="font-bold font-mono">- ¥{depreciationCost}</span>
                                 </div>
                             )}
@@ -297,25 +304,25 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
 
                     {/* 3. 电池健康 */}
                     <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base font-bold flex items-center gap-2">
+                        <CardHeader className="pb-2 p-3 lg:p-6">
+                            <CardTitle className="text-sm lg:text-base font-bold flex items-center gap-2">
                                 <Battery className="w-4 h-4" /> 3. 电池健康度
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                        <CardContent className="p-3 pt-0 lg:p-6 lg:pt-0">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3">
                                 {batteryLevels.map((level, idx) => (
                                     <div 
                                         key={idx} 
                                         onClick={() => setSelectedBattery(level)} 
                                         className={cn(
-                                            "cursor-pointer rounded-lg border p-3 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-muted/50",
+                                            "cursor-pointer rounded-lg border p-2 lg:p-3 flex flex-col items-center justify-center text-center gap-0.5 lg:gap-1 transition-all hover:bg-muted/50 min-h-[4rem]",
                                             selectedBattery.label === level.label ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border"
                                         )}
                                     >
-                                        <div className="font-bold text-sm">{level.label}</div>
-                                        <div className="text-xs text-muted-foreground">{level.desc}</div>
-                                        <div className={cn("text-[10px] font-mono font-bold mt-1", level.value===0 ? "text-green-600":"text-destructive")}>
+                                        <div className="font-bold text-xs lg:text-sm break-words w-full">{level.label}</div>
+                                        <div className="text-[10px] lg:text-xs text-muted-foreground scale-90 origin-center whitespace-nowrap">{level.desc}</div>
+                                        <div className={cn("text-[10px] font-mono font-bold mt-0.5", level.value===0 ? "text-green-600":"text-destructive")}>
                                             {level.value===0 ? '无扣款' : level.type==='percent' ? `-${level.value*100}%` : '固定扣款'}
                                         </div>
                                     </div>
@@ -325,59 +332,86 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
                     </Card>
 
                     {/* 4. 外观与屏幕 */}
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid md:grid-cols-2 gap-3 lg:gap-6">
                         <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                            <CardHeader className="pb-2 p-3 lg:p-6">
+                                <CardTitle className="text-sm lg:text-base font-bold flex items-center gap-2">
                                     <AlertTriangle className="w-4 h-4" /> 4. 外观成色
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-2">
+                            <CardContent className="space-y-2 p-3 pt-0 lg:p-6 lg:pt-0">
+                                <div className="grid grid-cols-2 gap-2">
                                 {conditionGrades.map((grade) => (
                                     <div 
                                         key={grade.id} 
                                         onClick={() => setSelectedCondition(grade)} 
                                         className={cn(
-                                            "flex justify-between items-center p-3 rounded-lg border cursor-pointer transition-all hover:bg-muted/50",
+                                            "flex flex-col justify-between p-2 rounded-lg border cursor-pointer transition-all hover:bg-muted/50 min-h-[4.5rem]",
                                             selectedCondition.id === grade.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border"
                                         )}
                                     >
                                         <div>
-                                            <div className="font-bold text-sm">{grade.label}</div>
-                                            <div className="text-xs text-muted-foreground">{grade.desc}</div>
+                                            <div className="flex justify-between items-start gap-1">
+                                                <div className="font-bold text-xs lg:text-sm break-words">{grade.label}</div>
+                                                <span className={cn("text-[10px] font-mono font-bold shrink-0", grade.deductionPercent===0 ? "text-green-600" : "text-destructive")}>
+                                                    {grade.deductionPercent===0 ? 'OK' : `-${grade.deductionPercent*100}%`}
+                                                </span>
+                                            </div>
+                                            <div className="text-[10px] lg:text-xs text-muted-foreground mt-1 line-clamp-2 leading-tight">{grade.desc}</div>
                                         </div>
-                                        <span className={cn("text-xs font-mono font-bold", grade.deductionPercent===0 ? "text-green-600" : "text-destructive")}>
-                                            {grade.deductionPercent===0 ? 'OK' : `-${grade.deductionPercent*100}%`}
-                                        </span>
                                     </div>
                                 ))}
+                                </div>
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                            <CardHeader className="pb-2 p-3 lg:p-6">
+                                <CardTitle className="text-sm lg:text-base font-bold flex items-center gap-2">
                                     <Smartphone className="w-4 h-4 text-destructive" /> 5. 屏幕状况
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="h-full flex flex-col justify-center">
-                                <div 
-                                    onClick={() => setIsScreenBroken(!isScreenBroken)} 
-                                    className={cn(
-                                        "flex-1 rounded-xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center p-6 text-center transition-all",
-                                        isScreenBroken 
-                                            ? "border-destructive bg-destructive/10 text-destructive" 
-                                            : "border-muted hover:border-primary/50 hover:bg-muted/20 text-muted-foreground"
-                                    )}
-                                >
-                                    <div className="mb-4">
-                                        <Switch checked={isScreenBroken} onCheckedChange={setIsScreenBroken} className="pointer-events-none" />
+                            <CardContent className="p-3 pt-0 lg:p-6 lg:pt-0 pb-3 lg:pb-6">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div 
+                                        onClick={() => setScreenCondition('perfect')}
+                                        className={cn(
+                                            "cursor-pointer rounded-lg border p-3 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-muted/50 min-h-[3.5rem]",
+                                            screenCondition === 'perfect' ? "border-green-500 bg-green-500/10 text-green-700 ring-1 ring-green-500" : "border-border opacity-80"
+                                        )}
+                                    >
+                                        <div className="font-bold text-xs lg:text-sm">完美无瑕</div>
+                                        <div className="text-[10px] opacity-80">无任何划痕</div>
                                     </div>
-                                    <div className="font-bold text-sm">
-                                        {isScreenBroken ? "屏幕已损坏 / 漏液 / 断触" : "屏幕完好无损"}
+                                    <div 
+                                        onClick={() => setScreenCondition('minor_scratches')}
+                                        className={cn(
+                                            "cursor-pointer rounded-lg border p-3 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-muted/50 min-h-[3.5rem]",
+                                            screenCondition === 'minor_scratches' ? "border-yellow-500 bg-yellow-500/10 text-yellow-700 ring-1 ring-yellow-500" : "border-border opacity-80"
+                                        )}
+                                    >
+                                        <div className="font-bold text-xs lg:text-sm">轻微刮痕</div>
+                                        <div className="text-[10px] opacity-80">特定角度可见</div>
                                     </div>
-                                    <div className="text-xs mt-2 opacity-70">
-                                        {isScreenBroken ? "点击取消标记" : "点击标记为损坏"}
+                                    <div 
+                                        onClick={() => setScreenCondition('major_scratches')}
+                                        className={cn(
+                                            "cursor-pointer rounded-lg border p-3 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-muted/50 min-h-[3.5rem]",
+                                            screenCondition === 'major_scratches' ? "border-orange-500 bg-orange-500/10 text-orange-700 ring-1 ring-orange-500" : "border-border opacity-80"
+                                        )}
+                                    >
+                                        <div className="font-bold text-xs lg:text-sm">严重划痕</div>
+                                        <div className="text-[10px] opacity-80">亮屏可见/深划痕</div>
+                                    </div>
+                                    <div 
+                                        onClick={() => setScreenCondition('broken')}
+                                        className={cn(
+                                            "cursor-pointer rounded-lg border p-3 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-muted/50 min-h-[3.5rem]",
+                                            screenCondition === 'broken' ? "border-destructive bg-destructive/10 text-destructive ring-1 ring-destructive" : "border-border opacity-80"
+                                        )}
+                                    >
+                                        <div className="font-bold text-xs lg:text-sm">屏幕损坏</div>
+                                        <div className="text-[10px] opacity-80">碎裂/漏液/断触</div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -430,10 +464,18 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
                                 </div>
                             )}
                             
-                            {isScreenBroken && selectedModel && (
+                            {screenCondition !== 'perfect' && selectedModel && (
                                 <div className="flex justify-between text-red-600 py-1 border-b border-dashed border-border/60">
-                                    <span>屏幕残值扣除</span>
-                                    <span className="font-mono">- {selectedModel.screenPrice}</span>
+                                    <span>
+                                        {screenCondition === 'broken' && "屏幕损坏扣除"}
+                                        {screenCondition === 'major_scratches' && "严重划痕扣除"}
+                                        {screenCondition === 'minor_scratches' && "轻微刮痕扣除"}
+                                    </span>
+                                    <span className="font-mono">- {
+                                        screenCondition === 'broken' ? selectedModel.screenPrice :
+                                        screenCondition === 'major_scratches' ? Math.floor(selectedModel.screenPrice * 0.4) :
+                                        Math.floor(selectedModel.screenPrice * 0.15)
+                                    }</span>
                                 </div>
                             )}
                         </CardContent>
@@ -481,10 +523,18 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
                                 </div>
                             )}
                             
-                            {isScreenBroken && selectedModel && (
+                            {screenCondition !== 'perfect' && selectedModel && (
                                 <div className="flex justify-between text-red-600 py-1 border-b border-dashed border-red-200">
-                                    <span>屏幕残值扣除</span>
-                                    <span className="font-mono">- {selectedModel.screenPrice}</span>
+                                    <span>
+                                        {screenCondition === 'broken' && "屏幕损坏"}
+                                        {screenCondition === 'major_scratches' && "严重划痕"}
+                                        {screenCondition === 'minor_scratches' && "轻微刮痕"}
+                                    </span>
+                                    <span className="font-mono">- {
+                                        screenCondition === 'broken' ? selectedModel.screenPrice :
+                                        screenCondition === 'major_scratches' ? Math.floor(selectedModel.screenPrice * 0.4) :
+                                        Math.floor(selectedModel.screenPrice * 0.15)
+                                    }</span>
                                 </div>
                             )}
                         </div>
