@@ -842,38 +842,7 @@ export function DesignaliCreative() {
 
         <main className="flex-1 p-4 md:p-6">
           <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
-                <TabsTrigger value="home" className="rounded-xl data-[state=active]:rounded-xl">
-                  首页
-                </TabsTrigger>
-                <TabsTrigger value="apps" className="rounded-xl data-[state=active]:rounded-xl">
-                  应用
-                </TabsTrigger>
-                <TabsTrigger value="files" className="rounded-xl data-[state=active]:rounded-xl">
-                  文件
-                </TabsTrigger>
-                <TabsTrigger value="projects" className="rounded-xl data-[state=active]:rounded-xl">
-                  项目
-                </TabsTrigger>
-                <TabsTrigger value="learn" className="rounded-xl data-[state=active]:rounded-xl">
-                  学习
-                </TabsTrigger>
-                <TabsTrigger value="recycling" className="hidden">
-                  回收报价
-                </TabsTrigger>
-              </TabsList>
-              <div className="hidden md:flex gap-2">
-                <Button variant="outline" className="rounded-2xl">
-                  <Download className="mr-2 h-4 w-4" />
-                  安装应用
-                </Button>
-                <Button className="rounded-2xl">
-                  <Plus className="mr-2 h-4 w-4" />
-                  新建项目
-                </Button>
-              </div>
-            </div>
+
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -1662,7 +1631,7 @@ export function DesignaliCreative() {
                   </section>
                 </TabsContent>
 
-                <TabsContent value="recycling" className="space-y-8 mt-0 h-[calc(100vh-8rem)]">
+                <TabsContent value="recycling" className="space-y-8 mt-0 h-[calc(100dvh-5rem)]">
                   <RecyclingApp />
                 </TabsContent>
               </motion.div>
