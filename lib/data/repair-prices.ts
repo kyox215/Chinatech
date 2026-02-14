@@ -6,6 +6,9 @@ export interface RepairItem {
   quality: string;
   price: number;
   warranty: string;
+  repair_type?: string;
+  priority?: number;
+  category?: string;
 }
 
 export const REPAIR_PRICES: RepairItem[] = [
