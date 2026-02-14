@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Designali 创意套件后台管理系统 (中文复刻版)
 
-## Getting Started
+本项目是基于 `后台设计风格.zip` 的完全复刻与汉化版本。采用 Next.js + Tailwind CSS + shadcn/ui 技术栈构建。
 
-First, run the development server:
+## 功能特性
+
+- **完全汉化**: 所有界面文本、数据、提示信息均已翻译为中文。
+- **响应式设计**: 完美适配桌面端和移动端。
+- **现代 UI**: 使用 shadcn/ui 组件库，风格简洁现代。
+- **丰富组件**: 包含仪表盘、应用列表、文件管理、项目管理、学习中心等多个功能模块。
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+npm install
+```
+
+### 2. 启动开发服务器
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 [http://localhost:3000](http://localhost:3000) 查看效果。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 项目结构
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/`: Next.js 页面路由与布局
+- `components/creative.tsx`: 核心后台界面组件
+- `components/ui/`: UI 组件库 (shadcn/ui)
+- `public/`: 静态资源
 
-## Learn More
+## 修改记录
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 初始化项目结构
+- 汉化 `components/creative.tsx` 中的所有英文内容
+- 更新 `app/layout.tsx` 元数据为中文
+- 汉化分页与日历组件
