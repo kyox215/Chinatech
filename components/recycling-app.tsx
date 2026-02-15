@@ -52,6 +52,7 @@ const batteryLevels = [
 export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: (visible: boolean) => void }) {
     const [data, setData] = React.useState<IPhoneModel[]>([]);
     const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState<string | null>(null);
     const [selectedModel, setSelectedModel] = React.useState<IPhoneModel | null>(null);
     const [selectedStorage, setSelectedStorage] = React.useState(storageTiers[0]);
     const [selectedCondition, setSelectedCondition] = React.useState(conditionGrades[0]);
@@ -77,27 +78,36 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
     React.useEffect(() => {
         async function fetchModels() {
             setLoading(true);
-            const { data: models, error } = await supabase
-                .from('recycling_models')
-                .select('*')
-                .order('release_year', { ascending: false });
+            setError(null);
+            try {
+                const { data: models, error } = await supabase
+                    .from('recycling_models')
+                    .select('*')
+                    .order('release_year', { ascending: false });
 
-            if (error) {
-                console.error('Error fetching models:', error);
-            } else if (models) {
-                // Map DB columns to frontend interface (snake_case to camelCase)
-                const formattedData: IPhoneModel[] = models.map((m: any) => ({
-                    id: m.id,
-                    model: m.model,
-                    screenPrice: m.screen_price,
-                    batteryPrice: m.battery_price,
-                    baseRecyclePrice: m.base_recycle_price,
-                    releaseYear: m.release_year
-                }));
-                setData(formattedData);
-                if (formattedData.length > 0) setSelectedModel(formattedData[0]);
+                if (error) {
+                    throw error;
+                }
+                
+                if (models) {
+                    // Map DB columns to frontend interface (snake_case to camelCase)
+                    const formattedData: IPhoneModel[] = models.map((m: any) => ({
+                        id: m.id,
+                        model: m.model,
+                        screenPrice: m.screen_price,
+                        batteryPrice: m.battery_price,
+                        baseRecyclePrice: m.base_recycle_price,
+                        releaseYear: m.release_year
+                    }));
+                    setData(formattedData);
+                    if (formattedData.length > 0) setSelectedModel(formattedData[0]);
+                }
+            } catch (err: any) {
+                console.error('Error fetching models:', err);
+                setError(err.message || "无法加载回收报价数据，请检查网络或配置");
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         }
 
         fetchModels();
@@ -210,53 +220,75 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
                 >
                     
                     {/* 1. 机型配置 */}
-                    <Card>
+                    <Card className={cn(error && "border-destructive/50 bg-destructive/5")}>
                         <CardHeader className="pb-2 p-3 lg:p-6">
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-sm lg:text-base font-bold flex items-center gap-2">
                                     <Smartphone className="w-4 h-4" /> 1. 机型配置
                                 </CardTitle>
-                                {selectedModel && (
-                                    <Badge variant={depInfo.badgeVariant} className="text-[10px] lg:text-xs px-1 py-0 h-5">
-                                        {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%)
+                                {error ? (
+                                    <Badge variant="destructive" className="text-[10px] lg:text-xs px-1 py-0 h-5">
+                                        数据加载失败
                                     </Badge>
+                                ) : (
+                                    selectedModel && (
+                                        <Badge variant={depInfo.badgeVariant} className="text-[10px] lg:text-xs px-1 py-0 h-5">
+                                            {depInfo.label} (-{(depInfo.monthlyRate*100).toFixed(1)}%)
+                                        </Badge>
+                                    )
                                 )}
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-3 p-3 pt-0 lg:p-6 lg:pt-0">
-                            <div className="space-y-1.5">
-                                <Label className="text-xs lg:text-sm">选择机型</Label>
-                                <Select 
-                                    value={selectedModel?.model} 
-                                    onValueChange={(val) => setSelectedModel(data.find(m => m.model === val) || null)}
-                                >
-                                    <SelectTrigger className="w-full text-base lg:text-lg font-medium h-10 lg:h-12">
-                                        <SelectValue placeholder="请选择 iPhone 机型" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {data.map(m => (
-                                            <SelectItem key={m.model} value={m.model}>{m.model}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label className="text-xs lg:text-sm">存储容量</Label>
-                                <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
-                                    {storageTiers.map((tier) => (
-                                        <Button
-                                            key={tier.label}
-                                            variant={selectedStorage.value === tier.value ? "default" : "outline"}
-                                            size="sm"
-                                            className={cn("w-full transition-all h-8 lg:h-10 text-xs lg:text-sm", selectedStorage.value === tier.value && "ring-2 ring-primary ring-offset-2")}
-                                            onClick={() => setSelectedStorage(tier)}
-                                        >
-                                            {tier.label.split('/')[0]}
-                                        </Button>
-                                    ))}
+                            {error ? (
+                                <div className="p-4 text-sm text-destructive flex flex-col gap-2">
+                                    <p className="font-semibold flex items-center gap-2">
+                                        <ShieldAlert className="w-4 h-4" /> 
+                                        {error}
+                                    </p>
+                                    <p className="text-xs opacity-80">
+                                        请检查 Supabase 环境变量 (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY) 是否已正确配置。
+                                    </p>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs lg:text-sm">选择机型</Label>
+                                    <Select 
+                                        value={selectedModel?.model} 
+                                        onValueChange={(val) => setSelectedModel(data.find(m => m.model === val) || null)}
+                                        disabled={loading || data.length === 0}
+                                    >
+                                        <SelectTrigger className="w-full text-base lg:text-lg font-medium h-10 lg:h-12">
+                                            <SelectValue placeholder={loading ? "加载中..." : "请选择 iPhone 机型"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {data.map(m => (
+                                                <SelectItem key={m.model} value={m.model}>{m.model}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
+                            {!error && (
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs lg:text-sm">存储容量</Label>
+                                    <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
+                                        {storageTiers.map((tier) => (
+                                            <Button
+                                                key={tier.label}
+                                                variant={selectedStorage.value === tier.value ? "default" : "outline"}
+                                                size="sm"
+                                                className={cn("w-full transition-all h-8 lg:h-10 text-xs lg:text-sm", selectedStorage.value === tier.value && "ring-2 ring-primary ring-offset-2")}
+                                                onClick={() => setSelectedStorage(tier)}
+                                                disabled={loading || !selectedModel}
+                                            >
+                                                {tier.label.split('/')[0]}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 

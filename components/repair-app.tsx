@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, ArrowLeft, Wrench, Smartphone, Check, X, Filter, Loader2, ChevronRight, Home, Settings, Plus, Trash2, Edit2, AlertCircle, Upload } from "lucide-react"
+import { Search, ArrowLeft, Wrench, Smartphone, Check, X, Filter, Loader2, ChevronRight, Home, Settings, Plus, Trash2, Edit2, AlertCircle, Upload, DatabaseZap } from "lucide-react"
 import { BrandIcon } from "@/components/brand-icon"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -148,6 +148,16 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
   useEffect(() => {
     fetchData()
   }, [])
+
+  // Add a useEffect to show toast if using fallback
+  useEffect(() => {
+      if (usingStaticFallback) {
+          toast.warning("无法连接数据库，已切换至离线/演示模式。请检查环境变量配置。", {
+              duration: 5000,
+              icon: <DatabaseZap className="h-4 w-4 text-orange-500" />
+          });
+      }
+  }, [usingStaticFallback]);
 
   // Handlers
   const handleAddModel = async (brand: string, model: string, repairs: RepairInput[]) => {
@@ -551,7 +561,13 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col h-screen bg-background">
+      {usingStaticFallback && (
+        <div className="bg-orange-500/10 text-orange-600 px-4 py-1 text-xs text-center border-b border-orange-500/20 font-medium flex items-center justify-center gap-2">
+            <DatabaseZap className="h-3 w-3" />
+            <span>当前处于离线演示模式（无法连接数据库）。如需启用实时数据，请在 Vercel 项目设置中添加 Supabase 环境变量。</span>
+        </div>
+      )}
       {/* Header & Global Search */}
       <div className="flex flex-col gap-4 sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-4 pt-2 border-b">
         <div className="flex items-center justify-between">
