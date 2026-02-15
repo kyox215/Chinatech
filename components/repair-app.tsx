@@ -1,6 +1,5 @@
-"use client"
-
 import { useState, useMemo, useEffect } from "react"
+
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, ArrowLeft, Wrench, Smartphone, Check, X, Filter, Loader2, ChevronRight, Home, Settings, Plus, Trash2, Edit2, AlertCircle, Upload } from "lucide-react"
 import { BrandIcon } from "@/components/brand-icon"
@@ -29,19 +28,25 @@ import { REPAIR_PRICES, type RepairItem } from "@/lib/data/repair-prices"
 import { cn } from "@/lib/utils"
 import { AddModelDialog, AddRepairDialog, EditRepairDialog, EditModelDialog, type RepairInput } from "@/components/repair/repair-dialogs"
 import { toast } from "sonner"
+import { buttonVariants } from "@/components/ui/button"
 
 interface RepairAppProps {
   setMainHeaderVisible: (visible: boolean) => void
 }
 
 export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
   const [searchSelectedBrand, setSearchSelectedBrand] = useState<string | null>(null) // New state for search flow
-  
   // Management State
   const [isManagementMode, setIsManagementMode] = useState(false)
+  
+  // Database state
+  const [dbItems, setDbItems] = useState<RepairItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [usingStaticFallback, setUsingStaticFallback] = useState(false)
   const [showAddModel, setShowAddModel] = useState(false)
   const [showAddRepair, setShowAddRepair] = useState(false)
   const [showEditRepair, setShowEditRepair] = useState(false)
@@ -51,9 +56,41 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
   const [addRepairTarget, setAddRepairTarget] = useState<{brand: string, model: string} | null>(null)
 
   // Database state
-  const [dbItems, setDbItems] = useState<RepairItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [usingStaticFallback, setUsingStaticFallback] = useState(false)
+  const [quickEditingId, setQuickEditingId] = useState<string | null>(null);
+  const [quickEditPrice, setQuickEditPrice] = useState<string>("");
+
+  const startQuickEdit = (item: RepairItem) => {
+      setQuickEditingId(item.id);
+      setQuickEditPrice(item.price.toString());
+  };
+
+  const saveQuickEdit = async (item: RepairItem) => {
+      if (!quickEditPrice) return;
+      const newPrice = parseFloat(quickEditPrice);
+      if (isNaN(newPrice)) return;
+      
+      // Optimistic Update
+      setDbItems(prev => prev.map(i => i.id === item.id ? { ...i, price: newPrice } : i));
+      setQuickEditingId(null);
+
+      try {
+          const res = await fetch('/api/repair', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: item.id, price: newPrice })
+          });
+          if (!res.ok) throw new Error("Failed");
+          toast.success("价格已更新");
+      } catch (err) {
+          toast.error("更新失败");
+          fetchData(); // Revert
+      }
+  };
+
+  const cancelQuickEdit = () => {
+      setQuickEditingId(null);
+      setQuickEditPrice("");
+  };
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
       isOpen: boolean;
@@ -202,6 +239,13 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
         priority: repair.priority // Update priority
       }
 
+      // Optimistic update
+      setDbItems(prev => prev.map(item => 
+          item.id === repair.id 
+          ? { ...item, ...updates }
+          : item
+      ));
+
       const res = await fetch('/api/repair', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -210,9 +254,10 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
 
       if (!res.ok) throw new Error('Failed to update')
       toast.success("更新成功")
-      fetchData() // Refresh data
+      // fetchData() // No need to fetch immediately if optimistic update works, but good for consistency
     } catch (err) {
       toast.error("更新失败")
+      fetchData() // Revert on error
     }
   }
 
@@ -701,10 +746,10 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
 
                                     {isManagementMode && (
                                         <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-7 px-2 text-xs gap-1"
+                                            <div
+                                                role="button"
+                                                tabIndex={0}
+                                                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-7 px-2 text-xs gap-1 cursor-pointer")}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setEditingModelTarget({ brand: selectedBrand!, model: modelName });
@@ -712,18 +757,18 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                 }}
                                             >
                                                 <Edit2 className="h-3 w-3" /> 编辑
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive"
+                                            </div>
+                                            <div
+                                                role="button"
+                                                tabIndex={0}
+                                                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive cursor-pointer")}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleDeleteModel(selectedBrand!, modelName);
                                                 }}
                                             >
                                                 <Trash2 className="h-3 w-3" /> 删除
-                                            </Button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -745,33 +790,66 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-bold text-primary text-base mr-2">€{item.price}</span>
-                                                {isManagementMode && (
-                                                    <>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon" 
-                                                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" 
-                                                            onClick={(e) => { 
-                                                                e.stopPropagation(); 
-                                                                setEditingItem(item);
-                                                                setShowEditRepair(true);
+                                                <div className="flex items-center gap-2">
+                                                    {isManagementMode && quickEditingId === item.id ? (
+                                                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                            <Input 
+                                                                autoFocus
+                                                                className="h-8 w-20 px-2 py-1 text-right font-bold text-base"
+                                                                value={quickEditPrice}
+                                                                onChange={(e) => setQuickEditPrice(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') saveQuickEdit(item);
+                                                                    if (e.key === 'Escape') cancelQuickEdit();
+                                                                }}
+                                                                onBlur={() => saveQuickEdit(item)} // Auto save on blur
+                                                                type="number"
+                                                            />
+                                                            <span className="text-sm font-medium">€</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span 
+                                                            className={cn(
+                                                                "font-bold text-primary text-base mr-2 transition-colors",
+                                                                isManagementMode && "cursor-pointer hover:text-primary/80 hover:underline decoration-dashed underline-offset-4"
+                                                            )}
+                                                            onClick={(e) => {
+                                                                if (isManagementMode) {
+                                                                    e.stopPropagation();
+                                                                    startQuickEdit(item);
+                                                                }
                                                             }}
+                                                            title={isManagementMode ? "点击快速修改价格" : undefined}
                                                         >
-                                                            <Edit2 className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon" 
-                                                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" 
-                                                            onClick={(e) => { e.stopPropagation(); handleDeleteRepair(item.id); }}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </div>
+                                                            €{item.price}
+                                                        </span>
+                                                    )}
+                                                    
+                                                    {isManagementMode && (
+                                                        <>
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="icon" 
+                                                                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full" 
+                                                                onClick={(e) => { 
+                                                                    e.stopPropagation(); 
+                                                                    setEditingItem(item);
+                                                                    setShowEditRepair(true);
+                                                                }}
+                                                            >
+                                                                <Edit2 className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="icon" 
+                                                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full" 
+                                                                onClick={(e) => { e.stopPropagation(); handleDeleteRepair(item.id); }}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
                                         </div>
                                     ))}
                                     {isManagementMode && (
@@ -902,10 +980,10 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
 
                                                 {isManagementMode && (
                                                     <div className="flex gap-2 mt-2 pl-11" onClick={(e) => e.stopPropagation()}>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="h-7 px-2 text-xs gap-1"
+                                                        <div
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-7 px-2 text-xs gap-1 cursor-pointer")}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setEditingModelTarget({ brand: brand, model: modelName });
@@ -913,18 +991,18 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                             }}
                                                         >
                                                             <Edit2 className="h-3 w-3" /> 编辑
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive"
+                                                        </div>
+                                                        <div
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive cursor-pointer")}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleDeleteModel(brand, modelName);
                                                             }}
                                                         >
                                                             <Trash2 className="h-3 w-3" /> 删除
-                                                        </Button>
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -947,32 +1025,65 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-bold text-primary text-base mr-2">€{item.price}</span>
-                                                            {isManagementMode && (
-                                                                <>
-                                                                    <Button 
-                                                                        variant="ghost" 
-                                                                        size="icon" 
-                                                                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full" 
-                                                                        onClick={(e) => { 
-                                                                            e.stopPropagation(); 
-                                                                            setEditingItem(item);
-                                                                            setShowEditRepair(true);
-                                                                        }}
-                                                                    >
-                                                                        <Edit2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button 
-                                                                        variant="ghost" 
-                                                                        size="icon" 
-                                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full" 
-                                                                        onClick={(e) => { e.stopPropagation(); handleDeleteRepair(item.id); }}
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </>
-                                                            )}
-                                                        </div>
+                                                        {isManagementMode && quickEditingId === item.id ? (
+                                                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                                <Input 
+                                                                    autoFocus
+                                                                    className="h-8 w-20 px-2 py-1 text-right font-bold text-base"
+                                                                    value={quickEditPrice}
+                                                                    onChange={(e) => setQuickEditPrice(e.target.value)}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter') saveQuickEdit(item);
+                                                                        if (e.key === 'Escape') cancelQuickEdit();
+                                                                    }}
+                                                                    onBlur={() => saveQuickEdit(item)} // Auto save on blur
+                                                                    type="number"
+                                                                />
+                                                                <span className="text-sm font-medium">€</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span 
+                                                                className={cn(
+                                                                    "font-bold text-primary text-base mr-2 transition-colors",
+                                                                    isManagementMode && "cursor-pointer hover:text-primary/80 hover:underline decoration-dashed underline-offset-4"
+                                                                )}
+                                                                onClick={(e) => {
+                                                                    if (isManagementMode) {
+                                                                        e.stopPropagation();
+                                                                        startQuickEdit(item);
+                                                                    }
+                                                                }}
+                                                                title={isManagementMode ? "点击快速修改价格" : undefined}
+                                                            >
+                                                                €{item.price}
+                                                            </span>
+                                                        )}
+                                                        
+                                                        {isManagementMode && (
+                                                            <>
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full" 
+                                                                    onClick={(e) => { 
+                                                                        e.stopPropagation(); 
+                                                                        setEditingItem(item);
+                                                                        setShowEditRepair(true);
+                                                                    }}
+                                                                >
+                                                                    <Edit2 className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full" 
+                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteRepair(item.id); }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                     </div>
                                                 ))}
                                                 {isManagementMode && (

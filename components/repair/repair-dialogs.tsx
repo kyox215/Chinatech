@@ -462,3 +462,117 @@ export function AddRepairDialog({ isOpen, brand, model, onClose, onAdd }: AddRep
     </div>
   );
 }
+
+// --- Edit Repair Dialog ---
+
+interface EditRepairDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (repair: RepairInput) => void;
+  initialData: {
+    id: string;
+    label: string;
+    type: string;
+    quality: string;
+    price: string;
+    warranty: string;
+  };
+}
+
+export function EditRepairDialog({ isOpen, onClose, onSave, initialData }: EditRepairDialogProps) {
+  const [label, setLabel] = useState(initialData.label);
+  const [type, setType] = useState(initialData.type);
+  const [quality, setQuality] = useState(initialData.quality);
+  const [price, setPrice] = useState(initialData.price);
+  const [warranty, setWarranty] = useState(initialData.warranty);
+
+  // Sync state when initialData changes (re-opening dialog with different item)
+  // Or use key in parent. Parent logic sets editingItem, which drives initialData.
+  // But useState is only initialized once. We need useEffect or key.
+  // Using key in parent is cleaner, but let's add simple sync just in case.
+  // Actually, parent conditionally renders {editingItem && <EditRepairDialog ... />}, so it remounts when editingItem changes from null to object.
+  // But if we switch from one item to another without closing? Unlikely flow.
+  // Remounting is safe.
+
+  const handleSubmit = () => {
+    if (!label.trim() || !price) return alert('请填写完整信息');
+    onSave({ 
+        id: initialData.id,
+        label, 
+        type, 
+        quality, 
+        price, 
+        warranty 
+    });
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-background/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-border/50"
+      >
+        <div className="flex items-center justify-between p-6 border-b border-border/50">
+          <div>
+            <h2 className="text-xl font-bold">编辑维修报价</h2>
+            <p className="text-sm text-muted-foreground">修改现有维修项目信息</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">名称</label>
+              <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="项目名称" className="rounded-xl" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">类型</label>
+                <select 
+                  value={type} 
+                  onChange={(e) => setType(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                >
+                  {REPAIR_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">质量</label>
+                <select 
+                  value={quality} 
+                  onChange={(e) => setQuality(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                >
+                  {QUALITIES.map(q => <option key={q.value} value={q.value}>{q.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">价格 (€)</label>
+                <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">保修</label>
+                <Input value={warranty} onChange={(e) => setWarranty(e.target.value)} className="rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 bg-muted/20 border-t border-border/50 flex justify-end gap-3">
+          <Button variant="ghost" onClick={onClose}>取消</Button>
+          <Button onClick={handleSubmit}>保存修改</Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
