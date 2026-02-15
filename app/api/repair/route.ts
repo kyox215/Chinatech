@@ -2,14 +2,22 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Lazy initialization to avoid build errors if env vars are missing
+let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase credentials');
+function getSupabase() {
+  if (supabaseInstance) return supabaseInstance;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase credentials');
+  }
+
+  supabaseInstance = createClient(supabaseUrl, supabaseKey);
+  return supabaseInstance;
 }
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -17,7 +25,7 @@ export async function GET(request: Request) {
   const model = searchParams.get('model');
 
   // Optimize: Parallel fetching with count check first
-  const countQuery = supabase.from('repair_quotes').select('*', { count: 'exact', head: true });
+  const countQuery = getSupabase().from('repair_quotes').select('*', { count: 'exact', head: true });
   if (brand && brand !== 'all') countQuery.eq('brand', brand);
   if (model) countQuery.eq('model', model);
   
@@ -29,7 +37,7 @@ export async function GET(request: Request) {
   const promises = [];
   
   for (let from = 0; from < total; from += PAGE_SIZE) {
-      const q = supabase
+      const q = getSupabase()
         .from('repair_quotes')
         .select('*')
         .order('priority', { ascending: false })
@@ -64,13 +72,13 @@ export async function POST(request: Request) {
     
     // Support bulk insert
     if (Array.isArray(body)) {
-      const { data, error } = await supabase.from('repair_quotes').insert(body).select();
+      const { data, error } = await getSupabase().from('repair_quotes').insert(body).select();
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json(data);
     }
     
     // Single insert
-    const { data, error } = await supabase.from('repair_quotes').insert(body).select();
+    const { data, error } = await getSupabase().from('repair_quotes').insert(body).select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json(data);
   } catch (err) {
@@ -89,7 +97,7 @@ export async function PUT(request: Request) {
           updates.model_code = body.newModelCode;
       }
       
-      const { data, error } = await supabase
+      const { data, error } = await getSupabase()
         .from('repair_quotes')
         .update(updates)
         .eq('brand', body.brand)
@@ -101,7 +109,7 @@ export async function PUT(request: Request) {
 
     // Case 2: Rename Brand
     if (body.oldBrand && body.newBrand) {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabase()
         .from('repair_quotes')
         .update({ brand: body.newBrand })
         .eq('brand', body.oldBrand)
@@ -113,7 +121,7 @@ export async function PUT(request: Request) {
     // Case 3: Update Single Record by ID
     if (body.id) {
       const { id, ...updates } = body;
-      const { data, error } = await supabase
+      const { data, error } = await getSupabase()
         .from('repair_quotes')
         .update(updates)
         .eq('id', id)
@@ -135,21 +143,21 @@ export async function DELETE(request: Request) {
   const model = searchParams.get('model');
 
   if (id) {
-    const { error } = await supabase.from('repair_quotes').delete().eq('id', id);
+    const { error } = await getSupabase().from('repair_quotes').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
   } 
   
   if (brand && model) {
     // Delete all repairs for a model
-    const { error } = await supabase.from('repair_quotes').delete().eq('brand', brand).eq('model', model);
+    const { error } = await getSupabase().from('repair_quotes').delete().eq('brand', brand).eq('model', model);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
   }
   
   if (brand) {
      // Delete entire brand
-     const { error } = await supabase.from('repair_quotes').delete().eq('brand', brand);
+     const { error } = await getSupabase().from('repair_quotes').delete().eq('brand', brand);
      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
      return NextResponse.json({ success: true });
   }
