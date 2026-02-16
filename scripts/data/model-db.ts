@@ -47,6 +47,56 @@ export const SMARTPHONE_DB: ModelInfo[] = [
   { brand: 'APPLE', model: 'iPhone 11 Pro', codes: ['A2215', 'A2160', 'A2217'], series: 'iPhone 系列' },
   { brand: 'APPLE', model: 'iPhone 11', codes: ['A2221', 'A2111', 'A2223'], series: 'iPhone 系列' },
 
+  // --- IPAD ---
+  // iPad Pro
+  { brand: 'APPLE', model: 'iPad Pro 13 (M4)', codes: ['A2925', 'A2926', 'A3007'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (M4)', codes: ['A2836', 'A2837', 'A3006'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 12.9 (6th Gen)', codes: ['A2436', 'A2764', 'A2437'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (4th Gen)', codes: ['A2759', 'A2435', 'A2761'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 12.9 (5th Gen)', codes: ['A2378', 'A2461', 'A2379'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (3rd Gen)', codes: ['A2377', 'A2459', 'A2301'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 12.9 (4th Gen)', codes: ['A2229', 'A2069', 'A2232'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (2nd Gen)', codes: ['A2228', 'A2068', 'A2230'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 12.9 (3rd Gen)', codes: ['A1876', 'A2014', 'A1895'], series: 'iPad Pro' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (1st Gen)', codes: ['A1980', 'A2013', 'A1934'], series: 'iPad Pro' },
+  // iPad Air
+  { brand: 'APPLE', model: 'iPad Air 13 (M2)', codes: ['A2898', 'A2899', 'A2900'], series: 'iPad Air' },
+  { brand: 'APPLE', model: 'iPad Air 11 (M2)', codes: ['A2902', 'A2903', 'A2904'], series: 'iPad Air' },
+  { brand: 'APPLE', model: 'iPad Air (5th Gen)', codes: ['A2588', 'A2589', 'A2591'], series: 'iPad Air' },
+  { brand: 'APPLE', model: 'iPad Air (4th Gen)', codes: ['A2316', 'A2324', 'A2325'], series: 'iPad Air' },
+  { brand: 'APPLE', model: 'iPad Air (3rd Gen)', codes: ['A2152', 'A2123', 'A2153'], series: 'iPad Air' },
+  // iPad mini
+  { brand: 'APPLE', model: 'iPad mini (A17 Pro)', codes: ['A2993', 'A2995', 'A2996'], series: 'iPad mini' },
+  { brand: 'APPLE', model: 'iPad mini (6th Gen)', codes: ['A2567', 'A2568', 'A2569'], series: 'iPad mini' },
+  { brand: 'APPLE', model: 'iPad mini (5th Gen)', codes: ['A2133', 'A2124', 'A2126'], series: 'iPad mini' },
+  // iPad (Base)
+  { brand: 'APPLE', model: 'iPad (10th Gen)', codes: ['A2696', 'A2757', 'A2777'], series: 'iPad' },
+  { brand: 'APPLE', model: 'iPad (9th Gen)', codes: ['A2602', 'A2604', 'A2603'], series: 'iPad' },
+  { brand: 'APPLE', model: 'iPad (8th Gen)', codes: ['A2270', 'A2428', 'A2429'], series: 'iPad' },
+  { brand: 'APPLE', model: 'iPad (7th Gen)', codes: ['A2197', 'A2200', 'A2198'], series: 'iPad' },
+
+  // --- APPLE WATCH ---
+  { brand: 'APPLE', model: 'Apple Watch Ultra 2', codes: ['A2986', 'A2987'], series: 'Apple Watch Ultra' },
+  { brand: 'APPLE', model: 'Apple Watch Ultra', codes: ['A2622', 'A2684', 'A2859'], series: 'Apple Watch Ultra' },
+  { brand: 'APPLE', model: 'Apple Watch Series 10 (46mm)', codes: ['A3333', 'A3451'], series: 'Apple Watch Series 10' },
+  { brand: 'APPLE', model: 'Apple Watch Series 10 (42mm)', codes: ['A3331', 'A3450'], series: 'Apple Watch Series 10' },
+  { brand: 'APPLE', model: 'Apple Watch Series 9 (45mm)', codes: ['A2984', 'A2985'], series: 'Apple Watch Series 9' },
+  { brand: 'APPLE', model: 'Apple Watch Series 9 (41mm)', codes: ['A2982', 'A2983'], series: 'Apple Watch Series 9' },
+  { brand: 'APPLE', model: 'Apple Watch Series 8 (45mm)', codes: ['A2771', 'A2774', 'A2775'], series: 'Apple Watch Series 8' },
+  { brand: 'APPLE', model: 'Apple Watch Series 8 (41mm)', codes: ['A2770', 'A2772', 'A2773'], series: 'Apple Watch Series 8' },
+  { brand: 'APPLE', model: 'Apple Watch Series 7 (45mm)', codes: ['A2474', 'A2477', 'A2478'], series: 'Apple Watch Series 7' },
+  { brand: 'APPLE', model: 'Apple Watch Series 7 (41mm)', codes: ['A2473', 'A2475', 'A2476'], series: 'Apple Watch Series 7' },
+  { brand: 'APPLE', model: 'Apple Watch SE 2 (44mm)', codes: ['A2723', 'A2724', 'A2856'], series: 'Apple Watch SE' },
+  { brand: 'APPLE', model: 'Apple Watch SE 2 (40mm)', codes: ['A2722', 'A2725', 'A2855'], series: 'Apple Watch SE' },
+  { brand: 'APPLE', model: 'Apple Watch Series 6 (44mm)', codes: ['A2292', 'A2294', 'A2376'], series: 'Apple Watch Series 6' },
+  { brand: 'APPLE', model: 'Apple Watch Series 6 (40mm)', codes: ['A2291', 'A2293', 'A2375'], series: 'Apple Watch Series 6' },
+  { brand: 'APPLE', model: 'Apple Watch SE (44mm)', codes: ['A2352', 'A2354', 'A2356'], series: 'Apple Watch SE' },
+  { brand: 'APPLE', model: 'Apple Watch SE (40mm)', codes: ['A2351', 'A2353', 'A2355'], series: 'Apple Watch SE' },
+  { brand: 'APPLE', model: 'Apple Watch Series 5 (44mm)', codes: ['A2093', 'A2095', 'A2157'], series: 'Apple Watch Series 5' },
+  { brand: 'APPLE', model: 'Apple Watch Series 5 (40mm)', codes: ['A2092', 'A2094', 'A2156'], series: 'Apple Watch Series 5' },
+  { brand: 'APPLE', model: 'Apple Watch Series 4 (44mm)', codes: ['A1978', 'A1976', 'A2008'], series: 'Apple Watch Series 4' },
+  { brand: 'APPLE', model: 'Apple Watch Series 4 (40mm)', codes: ['A1977', 'A1975', 'A2007'], series: 'Apple Watch Series 4' },
+
   // --- SAMSUNG ---
   // S Series
   { brand: 'SAMSUNG', model: 'Galaxy S24 Ultra', codes: ['SM-S928B', 'SM-S928U', 'SM-S928W'], series: 'Galaxy S 系列' },
