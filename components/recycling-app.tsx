@@ -261,42 +261,49 @@ export function RecyclingApp({ setMainHeaderVisible }: { setMainHeaderVisible?: 
     const [error, setError] = React.useState<string | null>(null);
     const [selectedModel, setSelectedModel] = React.useState<IPhoneModel | null>(null);
     const [selectedStorage, setSelectedStorage] = React.useState(storageTiers[0]);
-    const [selectedCondition, setSelectedCondition] = React.useState(conditionGrades[0]);
-    const [selectedBattery, setSelectedBattery] = React.useState(batteryLevels[0]);
 
-    // Update selected states when language changes
-    React.useEffect(() => {
-        setSelectedCondition(prev => conditionGrades.find(g => g.id === prev.id) || conditionGrades[0]);
-        // Battery levels don't have IDs, so we just reset or try to match by index if needed.
-        // For simplicity, we can keep the current index or reset.
-        // Let's match by index since the order is constant.
-        const currentBatteryIndex = batteryLevels.findIndex(b => b.value === selectedBattery.value && b.type === selectedBattery.type);
-        if (currentBatteryIndex !== -1) {
-            setSelectedBattery(batteryLevels[currentBatteryIndex]);
-        }
-    }, [language]);
-
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const [showAppHeader, setShowAppHeader] = React.useState(true);
-    const [isWidgetExpanded, setIsWidgetExpanded] = React.useState(false);
     const [language, setLanguage] = React.useState<Language>('zh');
-
     const t = translations[language];
 
-    const conditionGrades = [
+    const conditionGrades = React.useMemo(() => [
         { id: 'A', label: t.condition.A.label, deductionPercent: 0, color: "text-green-600", desc: t.condition.A.desc },
         { id: 'B', label: t.condition.B.label, deductionPercent: 0.05, color: "text-blue-600", desc: t.condition.B.desc },
         { id: 'C', label: t.condition.C.label, deductionPercent: 0.15, color: "text-orange-600", desc: t.condition.C.desc },
         { id: 'D', label: t.condition.D.label, deductionPercent: 0.30, color: "text-red-600", desc: t.condition.D.desc }
-    ];
+    ], [t]);
 
-    const batteryLevels = [
+    const batteryLevels = React.useMemo(() => [
         { label: "98% - 100%", desc: t.battery.excellent, type: 'percent', value: 0 },
         { label: "90% - 97%", desc: t.battery.minor, type: 'percent', value: 0.03 },
         { label: "85% - 89%", desc: t.battery.aging, type: 'percent', value: 0.06 },
         { label: "80% - 84%", desc: t.battery.severe, type: 'percent', value: 0.10 },
         { label: "< 80% / " + t.batteryReplace, desc: t.battery.replace, type: 'fixed', value: 1.0 }
-    ];
+    ], [t]);
+
+    const [selectedCondition, setSelectedCondition] = React.useState(conditionGrades[0]);
+    const [selectedBattery, setSelectedBattery] = React.useState(batteryLevels[0]);
+
+    // Update selected states when language changes
+    React.useEffect(() => {
+        // We use IDs to track selection across language changes for condition
+        setSelectedCondition(prev => {
+            const currentId = prev.id;
+            return conditionGrades.find(g => g.id === currentId) || conditionGrades[0];
+        });
+
+        // For battery, we track by index since structure is identical
+        setSelectedBattery(prev => {
+             // We match by value and type which are language-independent
+             return batteryLevels.find(b => b.value === prev.value && b.type === prev.type) || batteryLevels[0];
+        });
+    }, [language, conditionGrades, batteryLevels]);
+
+    const [screenCondition, setScreenCondition] = React.useState<'perfect' | 'minor_scratches' | 'major_scratches' | 'broken'>('perfect');
+    const [holdDays, setHoldDays] = React.useState(7);
+    const [showAppHeader, setShowAppHeader] = React.useState(true);
+    const [isWidgetExpanded, setIsWidgetExpanded] = React.useState(false);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const scrollTop = e.currentTarget.scrollTop;
         const isTop = scrollTop <= 20;
         
