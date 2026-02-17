@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Plus, Smartphone, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,6 +113,8 @@ const BRANDS = ['APPLE', 'SAMSUNG', 'XIAOMI', 'OPPO', 'HUAWEI', 'HONOR', 'REALME
 const REPAIR_TYPES = [
   { value: 'screen', label: '屏幕' },
   { value: 'battery', label: '电池' },
+  { value: 'charging', label: '充电口' },
+  { value: 'back_glass', label: '后盖' },
   { value: 'other', label: '其他' },
 ];
 const QUALITIES = [
@@ -122,14 +124,33 @@ const QUALITIES = [
   { value: 'standard', label: '标准' },
 ];
 
+// Default Pre-fill Templates
+const APPLE_DEFAULTS: RepairInput[] = [
+  { label: '屏幕 (原装)', type: 'screen', quality: 'orig', price: '', warranty: '6 MESI' },
+  { label: '屏幕 (组装)', type: 'screen', quality: 'comp', price: '', warranty: '6 MESI' },
+  { label: '电池 (原装)', type: 'battery', quality: 'orig', price: '', warranty: '6 MESI' },
+  { label: '电池 (组装)', type: 'battery', quality: 'comp', price: '', warranty: '6 MESI' },
+  { label: '电池 (扩容)', type: 'battery', quality: 'altcap', price: '', warranty: '6 MESI' },
+  { label: '尾插充电口', type: 'charging', quality: 'standard', price: '', warranty: '6 MESI' },
+  { label: '后盖', type: 'back_glass', quality: 'standard', price: '', warranty: '6 MESI' }
+];
+
+const OTHER_DEFAULTS: RepairInput[] = [
+  { label: '屏幕 (原装)', type: 'screen', quality: 'orig', price: '', warranty: '6 MESI' },
+  { label: '屏幕 (组装)', type: 'screen', quality: 'comp', price: '', warranty: '6 MESI' },
+  { label: '电池 (原装)', type: 'battery', quality: 'orig', price: '', warranty: '6 MESI' },
+  { label: '电池 (组装)', type: 'battery', quality: 'comp', price: '', warranty: '6 MESI' },
+  { label: '尾插充电口', type: 'charging', quality: 'standard', price: '', warranty: '6 MESI' }
+];
+
 const REPAIR_PRESETS = [
   { label: '屏幕 (组装)', type: 'screen', quality: 'comp' },
   { label: '屏幕 (原装)', type: 'screen', quality: 'orig' },
   { label: '电池 (组装)', type: 'battery', quality: 'comp' },
   { label: '电池 (原装)', type: 'battery', quality: 'orig' },
   { label: '电池 (扩容)', type: 'battery', quality: 'altcap' },
-  { label: '后盖', type: 'other', quality: 'standard' },
-  { label: '尾插/充电口', type: 'other', quality: 'standard' },
+  { label: '后盖', type: 'back_glass', quality: 'standard' },
+  { label: '尾插/充电口', type: 'charging', quality: 'standard' },
   { label: '听筒', type: 'other', quality: 'standard' },
   { label: '扬声器', type: 'other', quality: 'standard' },
   { label: '摄像头', type: 'other', quality: 'standard' },
@@ -148,11 +169,37 @@ interface AddModelDialogProps {
 export function AddModelDialog({ isOpen, onClose, onAdd, existingBrands = [] }: AddModelDialogProps) {
   const [brand, setBrand] = useState('APPLE');
   const [model, setModel] = useState('');
-  const [repairs, setRepairs] = useState<RepairInput[]>([
-    { label: '', type: 'screen', quality: 'orig', price: '', warranty: '6 MESI' }
-  ]);
+  const [repairs, setRepairs] = useState<RepairInput[]>(APPLE_DEFAULTS);
   const [useCustomBrand, setUseCustomBrand] = useState(false);
   const [customBrand, setCustomBrand] = useState('');
+  
+  // Track previous brand type to only reset when switching between Apple and Non-Apple
+  const [prevIsApple, setPrevIsApple] = useState(true);
+
+  // Auto-fill logic
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const currentBrand = useCustomBrand ? (customBrand || 'OTHER') : brand;
+    const isApple = currentBrand.toUpperCase() === 'APPLE';
+
+    // If brand type changed (Apple <-> Non-Apple), update repairs list
+    if (isApple !== prevIsApple) {
+        setPrevIsApple(isApple);
+        setRepairs(isApple ? APPLE_DEFAULTS : OTHER_DEFAULTS);
+    }
+  }, [brand, useCustomBrand, customBrand, isOpen, prevIsApple]);
+  
+  // Reset state when dialog opens/closes
+  useEffect(() => {
+      if (isOpen) {
+          // Ensure correct default on open
+          const currentBrand = useCustomBrand ? (customBrand || 'OTHER') : brand;
+          const isApple = currentBrand.toUpperCase() === 'APPLE';
+          setPrevIsApple(isApple);
+          setRepairs(isApple ? APPLE_DEFAULTS : OTHER_DEFAULTS);
+      }
+  }, [isOpen]);
 
   const addRepairRow = () => {
     setRepairs([...repairs, { label: '', type: 'screen', quality: 'orig', price: '', warranty: '6 MESI' }]);
