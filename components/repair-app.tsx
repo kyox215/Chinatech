@@ -502,62 +502,64 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
   const sortRepairItems = (items: RepairItem[]) => {
     return [...items]
     .filter(item => {
-        // Filter out High Cap for non-Apple brands entirely
-        const label = item.repair_item;
-        const type = item.repair_type || '';
-        const quality = item.quality;
-        const isHighCap = label.includes('高容') || label.includes('MAX') || label.includes('扩容') || quality === 'altcap';
+        // Since we have already normalized the database to only contain valid items,
+        // we can skip strict filtering here to allow all items in DB to show.
+        // Or if user insists on "Fixed display these repair items, do not hide", 
+        // we should ensure we show what is in the DB.
         
-        if (isHighCap && item.brand.toUpperCase() !== 'APPLE') return false;
+        // However, to be safe and consistent with "Fixed display", let's keep the logic 
+        // but make it permissive for things that might have slightly different names if user manually added them?
+        // No, user said "Don't hide". 
+        // If we filter, we hide. So let's REMOVE the filter logic and only keep the SORT logic.
         return true;
     })
     .sort((a, b) => {
       const getScore = (item: RepairItem) => {
-        const label = item.repair_item;
-        const type = item.repair_type || '';
-        const quality = item.quality;
+        const name = item.repair_item.trim();
         
-        // Screen
-        if (type === 'screen') {
-            if (quality === 'orig') return 10;
-            if (quality === 'comp') return 20;
-            return 25; 
-        }
-        
-        // Battery
-        if (type === 'battery') {
-            const isHighCap = label.includes('高容') || label.includes('MAX') || label.includes('扩容') || quality === 'altcap';
-            
-            // High Capacity / Max (Only for Apple, as we filtered others out)
-            if (isHighCap) return 45;
-            
-            if (quality === 'orig') return 30;
-            if (quality === 'comp') return 40;
-            
-            return 49;
-        }
+        // Define exact order scores
+        const orderMap: Record<string, number> = {
+            '屏幕 (原装)': 10,
+            '屏幕 (组装)': 20,
+            '电池 (原装)': 30,
+            '电池 (组装)': 40,
+            '电池 (扩容)': 50,
+            '尾插充电口': 60,            // Apple
+            '尾插充电口 (原装)': 61,     // Non-Apple
+            '尾插充电口 (组装)': 62,     // Non-Apple
+            '后盖': 70
+        };
 
-        // Specific labels if type is missing or generic
-        if (label.includes('屏幕')) {
-             if (label.includes('原装')) return 10;
-             return 20;
-        }
-        if (label.includes('电池')) {
-             const isHighCap = label.includes('高容') || label.includes('MAX') || label.includes('扩容');
-             if (isHighCap) return 45;
-             if (label.includes('原装')) return 30;
-             return 40;
-        }
-        
-        // Charging Port
-        if (label.includes('尾插') || label.includes('充电口') || type === 'charging') return 60;
-        
-        // Others
-        return 100;
+        return (orderMap[name] || 999) - (orderMap[b.repair_item.trim()] || 999);
       };
       
       return getScore(a) - getScore(b);
     });
+  }
+
+  // Helper to parse repair item name for display
+  const parseRepairItemDisplay = (name: string) => {
+      // Check for tags in parentheses
+      const match = name.match(/^(.+?)\s*\((.+?)\)$/);
+      if (match) {
+          const mainName = match[1].trim();
+          const tag = match[2].trim();
+          
+          let tagColor = "bg-zinc-100 text-zinc-700 border-zinc-200"; // Default gray
+          
+          if (tag === '原装') {
+              tagColor = "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800";
+          } else if (tag === '组装') {
+              tagColor = "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800";
+          } else if (tag === '扩容') {
+              tagColor = "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800";
+          }
+          
+          return { mainName, tag, tagColor };
+      }
+      
+      // No tag (e.g. "尾插充电口", "后盖")
+      return { mainName: name, tag: null, tagColor: null };
   }
 
   return (
@@ -680,12 +682,12 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleBrandSelect(brand)}
-                  className="flex flex-col items-center gap-2 cursor-pointer group min-w-0"
+                  className="flex flex-col items-center gap-2 cursor-pointer min-w-0"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-white/50 dark:bg-zinc-800/50 group-hover:bg-primary/5 flex items-center justify-center transition-colors shadow-sm border border-transparent group-hover:border-primary/20 shrink-0 backdrop-blur-sm">
-                    <BrandIcon brand={brand} className="w-8 h-8 opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-16 h-16 rounded-2xl bg-white/50 dark:bg-zinc-800/50 hover:bg-primary/5 active:bg-primary/10 flex items-center justify-center transition-colors shadow-sm border border-transparent hover:border-primary/20 shrink-0 backdrop-blur-sm">
+                    <BrandIcon brand={brand} className="w-8 h-8 opacity-80 hover:opacity-100 transition-opacity" />
                   </div>
-                  <span className="text-xs font-medium text-center truncate w-full max-w-[80px] text-muted-foreground group-hover:text-primary transition-colors block">
+                  <span className="text-xs font-medium text-center truncate w-full max-w-[80px] text-muted-foreground hover:text-primary transition-colors block">
                     {brand}
                   </span>
                 </motion.div>
@@ -737,7 +739,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                         <Accordion type="multiple" className="w-full space-y-2 pl-2 border-l-2 border-primary/10 ml-2">
                           {Object.entries(modelsMap).map(([modelName, items]) => (
                             <AccordionItem key={modelName} value={modelName} className="border rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm overflow-hidden shadow-sm data-[state=open]:border-primary/50 data-[state=open]:bg-white dark:data-[state=open]:bg-zinc-900 transition-all max-w-full">
-                              <AccordionTrigger className="px-4 py-4 hover:no-underline hover:bg-muted/30 group/trigger">
+                              <AccordionTrigger className="px-4 py-4 hover:no-underline active:bg-muted/30 transition-colors">
                                 <div className="flex flex-col gap-2 flex-1 min-w-0 text-left">
                                     <div className="flex items-center justify-between w-full">
                                         <span className="font-medium text-base truncate block">{modelName}</span>
@@ -746,7 +748,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                         </Badge>
                                     </div>
                                     
-                                    {items[0].model_code && (
+                                    {items[0].model_code && !(items[0].brand.toUpperCase() === 'APPLE' && items[0].category?.includes('iPhone')) && (
                                         <div className="flex flex-wrap gap-1.5">
                                             {items[0].model_code.split(',').map((code, idx) => (
                                                 <Badge 
@@ -791,13 +793,17 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                               </AccordionTrigger>
                               <AccordionContent className="pb-0">
                                         <div className="flex flex-col divide-y border-t bg-background/50">
-                                            {sortRepairItems(items).map((item) => (
-                                                <div key={item.id} className="flex items-center justify-between py-3 px-4 hover:bg-muted/50 transition-colors group">
+                                            {sortRepairItems(items).map((item) => {
+                                                const { mainName, tag, tagColor } = parseRepairItemDisplay(item.repair_item);
+                                                return (
+                                                <div key={item.id} className="flex items-center justify-between py-3 px-4 active:bg-muted/50 transition-colors cursor-default">
                                                     <div className="flex-1 min-w-0 pr-4">
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <span className="font-medium text-sm text-foreground/90">{item.repair_item}</span>
-                                                    {item.quality !== 'standard' && (
-                                                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-amber-200 text-amber-700 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900/20 shrink-0">{item.quality}</Badge>
+                                                    <span className="font-medium text-sm text-foreground/90">{mainName}</span>
+                                                    {tag && (
+                                                        <Badge variant="outline" className={cn("text-[10px] h-5 px-1.5 border shrink-0", tagColor)}>
+                                                            {tag}
+                                                        </Badge>
                                                     )}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -867,7 +873,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                     )}
                                                 </div>
                                         </div>
-                                    ))}
+                                    ); })}
                                     {isManagementMode && (
                                         <div className="p-2 bg-muted/20 flex justify-center">
                                             <Button 
@@ -957,7 +963,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                             return (
                                 <Accordion type="single" collapsible key={modelName} className="w-full">
                                     <AccordionItem value={modelName} className="border rounded-2xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm overflow-hidden shadow-sm data-[state=open]:border-primary/50 data-[state=open]:bg-white dark:data-[state=open]:bg-zinc-900 transition-all">
-                                    <AccordionTrigger className="px-4 py-4 hover:no-underline hover:bg-muted/30">
+                                    <AccordionTrigger className="px-4 py-4 hover:no-underline active:bg-muted/30 transition-colors">
                                             <div className="flex flex-col gap-2 flex-1 min-w-0 text-left">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -980,7 +986,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                     </div>
                                                 </div>
 
-                                                {items[0].model_code && (
+                                                {items[0].model_code && !(items[0].brand.toUpperCase() === 'APPLE' && items[0].category?.includes('iPhone')) && (
                                                     <div className="flex flex-wrap gap-1.5 pl-11">
                                                         {items[0].model_code.split(',').map((code, idx) => (
                                                             <Badge 
@@ -1025,13 +1031,17 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                         </AccordionTrigger>
                                         <AccordionContent className="pb-0">
                                             <div className="flex flex-col divide-y border-t bg-background/50">
-                                                {sortRepairItems(items).map((item) => (
-                                                    <div key={item.id} className="flex items-center justify-between py-3 px-4 hover:bg-muted/50 transition-colors group">
+                                                {sortRepairItems(items).map((item) => {
+                                                    const { mainName, tag, tagColor } = parseRepairItemDisplay(item.repair_item);
+                                                    return (
+                                                    <div key={item.id} className="flex items-center justify-between py-3 px-4 active:bg-muted/50 transition-colors cursor-default">
                                                         <div className="flex-1 min-w-0 pr-4">
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <span className="font-medium text-sm text-foreground/90">{item.repair_item}</span>
-                                                                {item.quality !== 'standard' && (
-                                                                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-amber-200 text-amber-700 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-900/20 shrink-0">{item.quality}</Badge>
+                                                                <span className="font-medium text-sm text-foreground/90">{mainName}</span>
+                                                                {tag && (
+                                                                    <Badge variant="outline" className={cn("text-[10px] h-5 px-1.5 border shrink-0", tagColor)}>
+                                                                        {tag}
+                                                                    </Badge>
                                                                 )}
                                                             </div>
                                                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -1101,7 +1111,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                         )}
                                                     </div>
                                                     </div>
-                                                ))}
+                                                ); })}
                                                 {isManagementMode && (
                                                     <div className="p-2 bg-muted/20 flex justify-center">
                                                         <Button 
