@@ -162,13 +162,14 @@ const REPAIR_PRESETS = [
 interface AddModelDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (brand: string, model: string, repairs: RepairInput[]) => void;
+  onAdd: (brand: string, model: string, modelCode: string, repairs: RepairInput[]) => void;
   existingBrands?: string[];
 }
 
 export function AddModelDialog({ isOpen, onClose, onAdd, existingBrands = [] }: AddModelDialogProps) {
   const [brand, setBrand] = useState('APPLE');
   const [model, setModel] = useState('');
+  const [modelCode, setModelCode] = useState('');
   const [repairs, setRepairs] = useState<RepairInput[]>(APPLE_DEFAULTS);
   const [useCustomBrand, setUseCustomBrand] = useState(false);
   const [customBrand, setCustomBrand] = useState('');
@@ -225,10 +226,11 @@ export function AddModelDialog({ isOpen, onClose, onAdd, existingBrands = [] }: 
     const validRepairs = repairs.filter(r => r.label.trim() && r.price);
     if (validRepairs.length === 0) return alert('请至少添加一个有效维修项');
 
-    onAdd(finalBrand, model.trim(), validRepairs);
+    onAdd(finalBrand, model.trim(), modelCode.trim(), validRepairs);
     
     // Reset
     setModel('');
+    setModelCode('');
     setRepairs([{ label: '', type: 'screen', quality: 'orig', price: '', warranty: '6 MESI' }]);
     onClose();
   };
@@ -294,6 +296,16 @@ export function AddModelDialog({ isOpen, onClose, onAdd, existingBrands = [] }: 
                 placeholder="例如: iPhone 15" 
                 className="rounded-xl"
               />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">代号 (Model Code)</label>
+              <Input 
+                value={modelCode} 
+                onChange={(e) => setModelCode(e.target.value)} 
+                placeholder="例如: A3296, SM-A556B" 
+                className="rounded-xl"
+              />
+              <p className="text-xs text-muted-foreground">多个代号请用逗号分隔</p>
             </div>
           </div>
 

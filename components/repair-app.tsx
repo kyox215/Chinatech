@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, ArrowLeft, Wrench, Smartphone, Check, X, Filter, Loader2, ChevronRight, Home, Settings, Plus, Trash2, Edit2, AlertCircle, Upload, DatabaseZap } from "lucide-react"
+import { Search, ArrowLeft, Wrench, Smartphone, Check, X, Filter, Loader2, ChevronRight, Home, Settings, Plus, Trash2, Edit2, AlertCircle, Upload, Download, DatabaseZap } from "lucide-react"
 import { BrandIcon } from "@/components/brand-icon"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
@@ -58,6 +59,76 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
   // Database state
   const [quickEditingId, setQuickEditingId] = useState<string | null>(null);
   const [quickEditPrice, setQuickEditPrice] = useState<string>("");
+  const importCsvInputRef = useRef<HTMLInputElement | null>(null)
+  const [importPreviewOpen, setImportPreviewOpen] = useState(false)
+  const [importPreview, setImportPreview] = useState<null | {
+    message?: string
+    totalRows?: number
+    parsed?: number
+    skippedEmpty?: number
+    deduped?: number
+    willInsert?: number
+    willUpdate?: number
+    errors?: Array<{ row: number; message: string }>
+    error?: string
+  }>(null)
+  const [importPendingFile, setImportPendingFile] = useState<File | null>(null)
+  const [importRunning, setImportRunning] = useState(false)
+
+  const escapeCsv = (value: unknown) => {
+    const s = String(value ?? '').replace(/\uFEFF/g, '');
+    if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+
+  const downloadCsv = (filename: string, csvText: string) => {
+    const blob = new Blob([`\uFEFF${csvText}`], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportRepairCsv = () => {
+    let scope = 'all';
+    let items = dbItems;
+
+    if (selectedBrand && selectedModel) {
+      scope = `${selectedBrand}-${selectedModel}`;
+      items = dbItems.filter((i) => i.brand === selectedBrand && i.model === selectedModel);
+    } else if (selectedBrand) {
+      scope = selectedBrand;
+      items = dbItems.filter((i) => i.brand === selectedBrand);
+    }
+
+    const header = ['brand', 'model', 'repair_item', 'quality', 'price', 'warranty', 'repair_type', 'category', 'model_code'];
+    const lines = [header.join(',')];
+
+    for (const item of items) {
+      lines.push(
+        [
+          escapeCsv(item.brand),
+          escapeCsv(item.model),
+          escapeCsv(item.repair_item),
+          escapeCsv(item.quality),
+          escapeCsv(item.price),
+          escapeCsv(item.warranty || ''),
+          escapeCsv(item.repair_type || ''),
+          escapeCsv(item.category || ''),
+          escapeCsv(item.model_code || ''),
+        ].join(',')
+      );
+    }
+
+    const date = new Date().toISOString().slice(0, 10);
+    const safeScope = scope.replace(/[^\w.-]+/g, '_').slice(0, 80);
+    downloadCsv(`repair_quotes_${safeScope}_${date}.csv`, lines.join('\n'));
+    toast.success(`已导出 ${items.length} 条到 CSV`);
+  };
 
   const startQuickEdit = (item: RepairItem) => {
       setQuickEditingId(item.id);
@@ -105,31 +176,16 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
     try {
       setLoading(true)
       
-      // Try load from cache first
-      const cached = localStorage.getItem('repair_data');
-      const cachedTime = localStorage.getItem('repair_data_time');
-      if (cached && cachedTime) {
-          const age = Date.now() - parseInt(cachedTime);
-          if (age < 5 * 60 * 1000) { // 5 minutes validity
-              setDbItems(JSON.parse(cached));
-              setLoading(false);
-              // Fetch in background if older than 1 minute to keep fresh?
-              // For now, just trust cache for 5 mins to be super fast.
-              return; 
-          } else {
-              // Show stale data while fetching
-              setDbItems(JSON.parse(cached));
-          }
-      }
+      // Force disable cache
+      // const cached = localStorage.getItem('repair_data'); ... removed
 
-      const res = await fetch('/api/repair')
+      const res = await fetch(`/api/repair?t=${Date.now()}`) // Add timestamp to bypass cache
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
       
       if (data && data.length > 0) {
           setDbItems(data as unknown as RepairItem[])
-          localStorage.setItem('repair_data', JSON.stringify(data));
-          localStorage.setItem('repair_data_time', Date.now().toString());
+          // localStorage.setItem('repair_data', JSON.stringify(data)); // Disabled cache storage
       } else {
           // Fallback if table is empty
           console.warn("Database empty, using static data")
@@ -160,11 +216,12 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
   }, [usingStaticFallback]);
 
   // Handlers
-  const handleAddModel = async (brand: string, model: string, repairs: RepairInput[]) => {
+  const handleAddModel = async (brand: string, model: string, modelCode: string, repairs: RepairInput[]) => {
     try {
       const records = repairs.map(r => ({
         brand,
         model,
+        model_code: modelCode,
         repair_item: r.label,
         repair_type: r.type,
         quality: r.quality,
@@ -314,29 +371,66 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
     const formData = new FormData()
     formData.append('file', file)
 
-    const loadingToast = toast.loading("正在导入数据...")
-
     try {
-      const res = await fetch('/api/repair/import', {
+      const loadingToast = toast.loading("正在分析 CSV...")
+      const res = await fetch('/api/repair/import?dryRun=1', {
         method: 'POST',
         body: formData,
       })
       
       const data = await res.json()
       
-      if (!res.ok) throw new Error(data.error || 'Import failed')
+      toast.dismiss(loadingToast)
+
+      if (!res.ok) {
+        toast.error(data.error || "分析失败，请检查文件格式")
+        e.target.value = ''
+        return
+      }
+
+      setImportPendingFile(file)
+      setImportPreview(data)
+      setImportPreviewOpen(true)
       
-      toast.dismiss(loadingToast)
-      toast.success(`成功导入 ${data.count} 条数据`)
-      fetchData()
     } catch (err) {
-      toast.dismiss(loadingToast)
-      toast.error("导入失败，请检查文件格式")
       console.error(err)
+      toast.error("分析失败，请检查文件格式")
     }
     
     // Reset input
     e.target.value = ''
+  }
+
+  const confirmImportCSV = async () => {
+    if (!importPendingFile) return
+    if (importRunning) return
+    setImportRunning(true)
+
+    const formData = new FormData()
+    formData.append('file', importPendingFile)
+
+    const loadingToast = toast.loading("正在导入数据...")
+
+    try {
+      const res = await fetch('/api/repair/import', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || 'Import failed')
+
+      toast.dismiss(loadingToast)
+      toast.success(`导入完成：新增 ${data.willInsert ?? 0}，更新 ${data.willUpdate ?? 0}`)
+      setImportPreviewOpen(false)
+      setImportPreview(null)
+      setImportPendingFile(null)
+      fetchData()
+    } catch (err) {
+      toast.dismiss(loadingToast)
+      console.error(err)
+      toast.error("导入失败，请检查文件格式")
+    } finally {
+      setImportRunning(false)
+      if (importCsvInputRef.current) importCsvInputRef.current.value = ''
+    }
   }
   const handleDeleteModel = async (brand: string, model: string) => {
     confirmDeleteModel(brand, model);
@@ -571,25 +665,25 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
         </div>
       )}
       {/* Header & Global Search */}
-      <div className="flex flex-col gap-4 sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-4 pt-2 border-b">
-        <div className="flex items-center justify-between">
-           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex flex-col gap-3 sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-3 pt-1.5 border-b">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+           <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
              {selectedBrand ? (
                 <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-8 px-2 rounded-full font-medium text-foreground hover:bg-muted/50 gap-1" 
+                    className="h-7 px-2 rounded-full font-medium text-foreground hover:bg-muted/50 gap-1" 
                     onClick={() => {
                         setSelectedBrand(null); 
                         setSelectedModel(null)
                     }}
                 >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="h-3.5 w-3.5" />
                     返回
                 </Button>
              ) : (
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => {setSelectedBrand(null); setSelectedModel(null)}}>
-                    <Home className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => {setSelectedBrand(null); setSelectedModel(null)}}>
+                    <Home className="h-3.5 w-3.5" />
                 </Button>
              )}
              
@@ -602,57 +696,68 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
              
              {selectedModel && (
                <>
-                 <ChevronRight className="h-4 w-4" />
-                 <span className="font-medium text-primary truncate max-w-[150px]">{selectedModel}</span>
+                 <ChevronRight className="h-3.5 w-3.5" />
+                 <span className="font-medium text-primary truncate max-w-[120px]">{selectedModel}</span>
                </>
              )}
            </div>
            
-           <h2 className="text-xl font-semibold flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+           <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2 justify-self-center pointer-events-none">
              维修报价
              {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
            </h2>
            
-           <div className="flex items-center gap-2">
-             <Button 
-               variant={isManagementMode ? "default" : "ghost"} 
-               size="icon" 
-               className={cn("rounded-full", isManagementMode && "bg-primary text-primary-foreground")}
-               onClick={() => setIsManagementMode(!isManagementMode)}
-               title="管理模式"
-             >
-               <Settings className="h-4 w-4" />
-             </Button>
-             {isManagementMode && (
-              <>
-               <div className="relative">
-                 <input
-                   type="file"
-                   accept=".csv"
-                   onChange={handleImportCSV}
-                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                   title="导入 CSV"
-                 />
-                 <Button size="sm" variant="outline" className="rounded-full gap-1">
-                   <Upload className="h-4 w-4" /> 导入 CSV
+           <div className="flex items-center gap-2 justify-self-end shrink-0">
+             <input ref={importCsvInputRef} type="file" accept=".csv" onChange={handleImportCSV} className="hidden" />
+             <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                 <Button
+                   variant="ghost"
+                   size="icon"
+                   className={cn(
+                     "h-8 w-8 rounded-full",
+                     isManagementMode ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-muted/50"
+                   )}
+                   title="管理与操作"
+                 >
+                   <Settings className="h-4 w-4" />
                  </Button>
-               </div>
-               <Button size="sm" className="rounded-full bg-green-600 hover:bg-green-700 text-white" onClick={() => setShowAddModel(true)}>
-                 <Plus className="h-4 w-4 mr-1" /> 新增型号
-               </Button>
-              </>
-             )}
+               </DropdownMenuTrigger>
+               <DropdownMenuContent align="end" className="min-w-40">
+                 <DropdownMenuCheckboxItem checked={isManagementMode} onCheckedChange={(v) => setIsManagementMode(!!v)}>
+                   管理模式
+                 </DropdownMenuCheckboxItem>
+                 <DropdownMenuSeparator />
+                 <DropdownMenuItem onSelect={() => exportRepairCsv()}>
+                   <Download className="h-4 w-4" />
+                   导出 CSV
+                 </DropdownMenuItem>
+                 {isManagementMode && (
+                   <>
+                     <DropdownMenuSeparator />
+                     <DropdownMenuItem onSelect={() => setTimeout(() => importCsvInputRef.current?.click(), 0)}>
+                       <Upload className="h-4 w-4" />
+                       导入 CSV
+                     </DropdownMenuItem>
+                     <DropdownMenuItem onSelect={() => setShowAddModel(true)}>
+                       <Plus className="h-4 w-4" />
+                       新增型号
+                     </DropdownMenuItem>
+                   </>
+                 )}
+               </DropdownMenuContent>
+             </DropdownMenu>
            </div>
         </div>
 
         <div className="relative mx-2">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={loading ? "加载数据中..." : "搜索型号、故障 (如 iPhone 13 屏幕)..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={loading}
-            className="pl-9 rounded-2xl bg-muted/40 border-transparent focus:bg-background focus:border-primary/20 transition-all h-10 shadow-sm"
+            className="pl-9 rounded-2xl bg-muted/40 border-transparent focus:bg-background focus:border-primary/20 transition-all h-9 shadow-sm"
           />
         </div>
 
@@ -814,10 +919,10 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                             </div>
                                                 <div className="flex items-center gap-2">
                                                     {isManagementMode && quickEditingId === item.id ? (
-                                                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                                                             <Input 
                                                                 autoFocus
-                                                                className="h-8 w-20 px-2 py-1 text-right font-bold text-base"
+                                                                className="h-8 w-24 sm:w-28 px-2 py-1 text-right font-bold text-base"
                                                                 value={quickEditPrice}
                                                                 onChange={(e) => setQuickEditPrice(e.target.value)}
                                                                 onKeyDown={(e) => {
@@ -847,7 +952,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                         </span>
                                                     )}
                                                     
-                                                    {isManagementMode && (
+                                                    {isManagementMode && quickEditingId !== item.id && (
                                                         <>
                                                             <Button 
                                                                 variant="ghost" 
@@ -1052,10 +1157,10 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                         {isManagementMode && quickEditingId === item.id ? (
-                                                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                                                                 <Input 
                                                                     autoFocus
-                                                                    className="h-8 w-20 px-2 py-1 text-right font-bold text-base"
+                                                                    className="h-8 w-24 sm:w-28 px-2 py-1 text-right font-bold text-base"
                                                                     value={quickEditPrice}
                                                                     onChange={(e) => setQuickEditPrice(e.target.value)}
                                                                     onKeyDown={(e) => {
@@ -1085,7 +1190,7 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
                                                             </span>
                                                         )}
                                                         
-                                                        {isManagementMode && (
+                                                        {isManagementMode && quickEditingId !== item.id && (
                                                             <>
                                                                 <Button 
                                                                     variant="ghost" 
@@ -1158,6 +1263,58 @@ export function RepairApp({ setMainHeaderVisible }: RepairAppProps) {
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={importPreviewOpen}
+        onOpenChange={(open) => {
+          setImportPreviewOpen(open)
+          if (!open) {
+            setImportPreview(null)
+            setImportPendingFile(null)
+            if (importCsvInputRef.current) importCsvInputRef.current.value = ''
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认导入 CSV？</AlertDialogTitle>
+            <AlertDialogDescription>
+              默认采用合并更新：相同品牌/型号/维修项/品质会更新，不会重复插入。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <span>解析行数：{importPreview?.parsed ?? 0}</span>
+              <span>预计新增：{importPreview?.willInsert ?? 0}</span>
+              <span>预计更新：{importPreview?.willUpdate ?? 0}</span>
+            </div>
+
+            {(importPreview?.errors?.length || 0) > 0 && (
+              <div className="rounded-md border p-2 bg-muted/30">
+                <div className="font-medium mb-1">发现错误（前 50 条）</div>
+                <div className="max-h-40 overflow-auto text-xs space-y-1">
+                  {importPreview?.errors?.map((e, i) => (
+                    <div key={`${e.row}-${i}`}>
+                      第 {e.row} 行：{e.message}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={importRunning}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmImportCSV}
+              disabled={importRunning || ((importPreview?.errors?.length || 0) > 0)}
+            >
+              确认导入
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

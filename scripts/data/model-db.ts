@@ -1,4 +1,9 @@
 
+import { HONOR_HONOR_GENERATED_MODELS } from './brands/honor.generated';
+import { MOTOROLA_MODELS } from './brands/motorola';
+import { REALME_REALME_GENERATED_MODELS } from './brands/realme.generated';
+import { VIVO_VIVO_GENERATED_MODELS } from './brands/vivo.generated';
+
 export interface ModelInfo {
   brand: string;
   model: string;
@@ -6,9 +11,88 @@ export interface ModelInfo {
   series?: string;
 }
 
-export const SMARTPHONE_DB: ModelInfo[] = [
+function normalizeText(value: string) {
+  return (value || '').trim();
+}
+
+function normalizeBrand(value: string) {
+  return normalizeText(value).toUpperCase();
+}
+
+function normalizeCodes(codes: string[]) {
+  return Array.from(
+    new Set(
+      (codes || [])
+        .map((c) => normalizeText(c))
+        .filter((c) => c.length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b));
+}
+
+function makeModelKey(brand: string, model: string) {
+  return `${normalizeBrand(brand)}|${normalizeText(model)}`;
+}
+
+function canonicalizeModels(items: ModelInfo[]): ModelInfo[] {
+  const merged = new Map<string, ModelInfo>();
+
+  for (const item of items) {
+    const brand = normalizeBrand(item.brand);
+    const model = normalizeText(item.model);
+    const key = makeModelKey(brand, model);
+    const codes = normalizeCodes(item.codes);
+    const series = item.series ? normalizeText(item.series) : undefined;
+
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, { brand, model, codes, series });
+      continue;
+    }
+
+    const mergedCodes = normalizeCodes([...(existing.codes || []), ...codes]);
+    merged.set(key, {
+      brand,
+      model,
+      codes: mergedCodes,
+      series: existing.series || series,
+    });
+  }
+
+  return Array.from(merged.values()).sort((a, b) => {
+    const bc = a.brand.localeCompare(b.brand);
+    if (bc !== 0) return bc;
+    const sc = (a.series || '').localeCompare(b.series || '');
+    if (sc !== 0) return sc;
+    return a.model.localeCompare(b.model);
+  });
+}
+
+function asModelInfoArray(
+  items: ReadonlyArray<{
+    brand: string;
+    model: string;
+    codes: ReadonlyArray<string>;
+    series?: string;
+  }>
+): ModelInfo[] {
+  return items.map((i) => ({
+    brand: i.brand,
+    model: i.model,
+    codes: Array.from(i.codes || []),
+    series: i.series,
+  }));
+}
+
+const RAW_SMARTPHONE_DB: ModelInfo[] = [
   // --- APPLE ---
-  // iPhone 16 (2024) - Estimated codes based on patterns or leaks/releases
+  // iPhone 17 (2025/2026 Prediction)
+  { brand: 'APPLE', model: 'iPhone 17 Pro Max', codes: ['A3496', 'A3497'], series: 'iPhone 系列' },
+  { brand: 'APPLE', model: 'iPhone 17 Pro', codes: ['A3493', 'A3494'], series: 'iPhone 系列' },
+  { brand: 'APPLE', model: 'iPhone 17 Plus', codes: ['A3490', 'A3491'], series: 'iPhone 系列' },
+  { brand: 'APPLE', model: 'iPhone 17', codes: ['A3487', 'A3488'], series: 'iPhone 系列' },
+  { brand: 'APPLE', model: 'iPhone SE (4th Gen)', codes: ['A3500', 'A3501'], series: 'iPhone 系列' },
+
+  // iPhone 16 (2024)
   { brand: 'APPLE', model: 'iPhone 16 Pro Max', codes: ['A3296', 'A3297', 'A3298'], series: 'iPhone 系列' },
   { brand: 'APPLE', model: 'iPhone 16 Pro', codes: ['A3293', 'A3294', 'A3295'], series: 'iPhone 系列' },
   { brand: 'APPLE', model: 'iPhone 16 Plus', codes: ['A3290', 'A3291', 'A3292'], series: 'iPhone 系列' },
@@ -42,80 +126,81 @@ export const SMARTPHONE_DB: ModelInfo[] = [
   { brand: 'APPLE', model: 'iPhone SE (2022)', codes: ['A2783', 'A2595', 'A2782', 'A2784', 'A2785'], series: 'iPhone 系列' },
   { brand: 'APPLE', model: 'iPhone SE (2020)', codes: ['A2296', 'A2275', 'A2298'], series: 'iPhone 系列' },
 
-  // iPhone 11 (2019) - Still popular
+  // iPhone 11 (2019)
   { brand: 'APPLE', model: 'iPhone 11 Pro Max', codes: ['A2218', 'A2161', 'A2220'], series: 'iPhone 系列' },
   { brand: 'APPLE', model: 'iPhone 11 Pro', codes: ['A2215', 'A2160', 'A2217'], series: 'iPhone 系列' },
   { brand: 'APPLE', model: 'iPhone 11', codes: ['A2221', 'A2111', 'A2223'], series: 'iPhone 系列' },
 
-  // --- IPAD ---
-  // iPad Pro
-  { brand: 'APPLE', model: 'iPad Pro 13 (M4)', codes: ['A2925', 'A2926', 'A3007'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 11 (M4)', codes: ['A2836', 'A2837', 'A3006'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 12.9 (6th Gen)', codes: ['A2436', 'A2764', 'A2437'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 11 (4th Gen)', codes: ['A2759', 'A2435', 'A2761'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 12.9 (5th Gen)', codes: ['A2378', 'A2461', 'A2379'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 11 (3rd Gen)', codes: ['A2377', 'A2459', 'A2301'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 12.9 (4th Gen)', codes: ['A2229', 'A2069', 'A2232'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 11 (2nd Gen)', codes: ['A2228', 'A2068', 'A2230'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 12.9 (3rd Gen)', codes: ['A1876', 'A2014', 'A1895'], series: 'iPad Pro' },
-  { brand: 'APPLE', model: 'iPad Pro 11 (1st Gen)', codes: ['A1980', 'A2013', 'A1934'], series: 'iPad Pro' },
-  // iPad Air
-  { brand: 'APPLE', model: 'iPad Air 13 (M2)', codes: ['A2898', 'A2899', 'A2900'], series: 'iPad Air' },
-  { brand: 'APPLE', model: 'iPad Air 11 (M2)', codes: ['A2902', 'A2903', 'A2904'], series: 'iPad Air' },
-  { brand: 'APPLE', model: 'iPad Air (5th Gen)', codes: ['A2588', 'A2589', 'A2591'], series: 'iPad Air' },
-  { brand: 'APPLE', model: 'iPad Air (4th Gen)', codes: ['A2316', 'A2324', 'A2325'], series: 'iPad Air' },
-  { brand: 'APPLE', model: 'iPad Air (3rd Gen)', codes: ['A2152', 'A2123', 'A2153'], series: 'iPad Air' },
-  // iPad mini
-  { brand: 'APPLE', model: 'iPad mini (A17 Pro)', codes: ['A2993', 'A2995', 'A2996'], series: 'iPad mini' },
-  { brand: 'APPLE', model: 'iPad mini (6th Gen)', codes: ['A2567', 'A2568', 'A2569'], series: 'iPad mini' },
-  { brand: 'APPLE', model: 'iPad mini (5th Gen)', codes: ['A2133', 'A2124', 'A2126'], series: 'iPad mini' },
-  // iPad (Base)
-  { brand: 'APPLE', model: 'iPad (10th Gen)', codes: ['A2696', 'A2757', 'A2777'], series: 'iPad' },
-  { brand: 'APPLE', model: 'iPad (9th Gen)', codes: ['A2602', 'A2604', 'A2603'], series: 'iPad' },
-  { brand: 'APPLE', model: 'iPad (8th Gen)', codes: ['A2270', 'A2428', 'A2429'], series: 'iPad' },
-  { brand: 'APPLE', model: 'iPad (7th Gen)', codes: ['A2197', 'A2200', 'A2198'], series: 'iPad' },
+  // --- IPAD (Consolidated Series) ---
+  { brand: 'APPLE', model: 'iPad Pro 13 (M4)', codes: ['A2925', 'A2926', 'A3007'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (M4)', codes: ['A2836', 'A2837', 'A3006'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Pro 12.9 (6th Gen)', codes: ['A2436', 'A2764', 'A2437'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (4th Gen)', codes: ['A2759', 'A2435', 'A2761'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Pro 12.9 (5th Gen)', codes: ['A2378', 'A2461', 'A2379'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Pro 11 (3rd Gen)', codes: ['A2377', 'A2459', 'A2301'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Air 13 (M2)', codes: ['A2898', 'A2899', 'A2900'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Air 11 (M2)', codes: ['A2902', 'A2903', 'A2904'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad Air (5th Gen)', codes: ['A2588', 'A2589', 'A2591'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad mini (A17 Pro)', codes: ['A2993', 'A2995', 'A2996'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad mini (6th Gen)', codes: ['A2567', 'A2568', 'A2569'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad (10th Gen)', codes: ['A2696', 'A2757', 'A2777'], series: 'iPad 系列' },
+  { brand: 'APPLE', model: 'iPad (9th Gen)', codes: ['A2602', 'A2604', 'A2603'], series: 'iPad 系列' },
 
-  // --- APPLE WATCH ---
-  { brand: 'APPLE', model: 'Apple Watch Ultra 2', codes: ['A2986', 'A2987'], series: 'Apple Watch Ultra' },
-  { brand: 'APPLE', model: 'Apple Watch Ultra', codes: ['A2622', 'A2684', 'A2859'], series: 'Apple Watch Ultra' },
-  { brand: 'APPLE', model: 'Apple Watch Series 10 (46mm)', codes: ['A3333', 'A3451'], series: 'Apple Watch Series 10' },
-  { brand: 'APPLE', model: 'Apple Watch Series 10 (42mm)', codes: ['A3331', 'A3450'], series: 'Apple Watch Series 10' },
-  { brand: 'APPLE', model: 'Apple Watch Series 9 (45mm)', codes: ['A2984', 'A2985'], series: 'Apple Watch Series 9' },
-  { brand: 'APPLE', model: 'Apple Watch Series 9 (41mm)', codes: ['A2982', 'A2983'], series: 'Apple Watch Series 9' },
-  { brand: 'APPLE', model: 'Apple Watch Series 8 (45mm)', codes: ['A2771', 'A2774', 'A2775'], series: 'Apple Watch Series 8' },
-  { brand: 'APPLE', model: 'Apple Watch Series 8 (41mm)', codes: ['A2770', 'A2772', 'A2773'], series: 'Apple Watch Series 8' },
-  { brand: 'APPLE', model: 'Apple Watch Series 7 (45mm)', codes: ['A2474', 'A2477', 'A2478'], series: 'Apple Watch Series 7' },
-  { brand: 'APPLE', model: 'Apple Watch Series 7 (41mm)', codes: ['A2473', 'A2475', 'A2476'], series: 'Apple Watch Series 7' },
-  { brand: 'APPLE', model: 'Apple Watch SE 2 (44mm)', codes: ['A2723', 'A2724', 'A2856'], series: 'Apple Watch SE' },
-  { brand: 'APPLE', model: 'Apple Watch SE 2 (40mm)', codes: ['A2722', 'A2725', 'A2855'], series: 'Apple Watch SE' },
-  { brand: 'APPLE', model: 'Apple Watch Series 6 (44mm)', codes: ['A2292', 'A2294', 'A2376'], series: 'Apple Watch Series 6' },
-  { brand: 'APPLE', model: 'Apple Watch Series 6 (40mm)', codes: ['A2291', 'A2293', 'A2375'], series: 'Apple Watch Series 6' },
-  { brand: 'APPLE', model: 'Apple Watch SE (44mm)', codes: ['A2352', 'A2354', 'A2356'], series: 'Apple Watch SE' },
-  { brand: 'APPLE', model: 'Apple Watch SE (40mm)', codes: ['A2351', 'A2353', 'A2355'], series: 'Apple Watch SE' },
-  { brand: 'APPLE', model: 'Apple Watch Series 5 (44mm)', codes: ['A2093', 'A2095', 'A2157'], series: 'Apple Watch Series 5' },
-  { brand: 'APPLE', model: 'Apple Watch Series 5 (40mm)', codes: ['A2092', 'A2094', 'A2156'], series: 'Apple Watch Series 5' },
-  { brand: 'APPLE', model: 'Apple Watch Series 4 (44mm)', codes: ['A1978', 'A1976', 'A2008'], series: 'Apple Watch Series 4' },
-  { brand: 'APPLE', model: 'Apple Watch Series 4 (40mm)', codes: ['A1977', 'A1975', 'A2007'], series: 'Apple Watch Series 4' },
+  // --- APPLE WATCH (Consolidated Series) ---
+  { brand: 'APPLE', model: 'Apple Watch Ultra 2', codes: ['A2986', 'A2987'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Ultra', codes: ['A2622', 'A2684', 'A2859'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 10 (46mm)', codes: ['A3333', 'A3451'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 10 (42mm)', codes: ['A3331', 'A3450'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 9 (45mm)', codes: ['A2984', 'A2985'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 9 (41mm)', codes: ['A2982', 'A2983'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 8 (45mm)', codes: ['A2771', 'A2774', 'A2775'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 8 (41mm)', codes: ['A2770', 'A2772', 'A2773'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 7 (45mm)', codes: ['A2474', 'A2477', 'A2478'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch Series 7 (41mm)', codes: ['A2473', 'A2475', 'A2476'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch SE 2 (44mm)', codes: ['A2723', 'A2724', 'A2856'], series: 'Apple Watch 系列' },
+  { brand: 'APPLE', model: 'Apple Watch SE 2 (40mm)', codes: ['A2722', 'A2725', 'A2855'], series: 'Apple Watch 系列' },
 
   // --- SAMSUNG ---
   // S Series
-  { brand: 'SAMSUNG', model: 'Galaxy S24 Ultra', codes: ['SM-S928B', 'SM-S928U', 'SM-S928W'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S26 Ultra', codes: ['SM-S948B'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S26+', codes: ['SM-S946B'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S26', codes: ['SM-S941B'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S25 Ultra', codes: ['SM-S938B'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S25+', codes: ['SM-S936B'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S25', codes: ['SM-S931B'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S24 Ultra', codes: ['SM-S928B', 'SM-S928U'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S24+', codes: ['SM-S926B', 'SM-S926U'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S24', codes: ['SM-S921B', 'SM-S921U'], series: 'Galaxy S 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy S23 Ultra', codes: ['SM-S918B', 'SM-S918U'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S24 FE', codes: ['SM-S721B'], series: 'Galaxy S 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy S23 Ultra', codes: ['SM-S918B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S23+', codes: ['SM-S916B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S23', codes: ['SM-S911B'], series: 'Galaxy S 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy S23 FE', codes: ['SM-S711B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S22 Ultra', codes: ['SM-S908B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S22+', codes: ['SM-S906B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S22', codes: ['SM-S901B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S21 Ultra', codes: ['SM-G998B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S21+', codes: ['SM-G996B'], series: 'Galaxy S 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy S21', codes: ['SM-G991B'], series: 'Galaxy S 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy S21 FE', codes: ['SM-G990B'], series: 'Galaxy S 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy S20 FE', codes: ['SM-G780F', 'SM-G780G', 'SM-G781B'], series: 'Galaxy S 系列' },
 
-  // A Series (Very popular in Europe)
+  // Z Series (Fold/Flip)
+  { brand: 'SAMSUNG', model: 'Galaxy Z Fold 6', codes: ['SM-F956B'], series: 'Galaxy Z 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Z Flip 6', codes: ['SM-F741B'], series: 'Galaxy Z 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Z Fold 5', codes: ['SM-F946B'], series: 'Galaxy Z 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Z Flip 5', codes: ['SM-F731B'], series: 'Galaxy Z 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Z Fold 4', codes: ['SM-F936B'], series: 'Galaxy Z 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Z Flip 4', codes: ['SM-F721B'], series: 'Galaxy Z 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Z Fold 3', codes: ['SM-F926B'], series: 'Galaxy Z 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Z Flip 3', codes: ['SM-F711B'], series: 'Galaxy Z 系列' },
+
+  // Note Series
+  { brand: 'SAMSUNG', model: 'Galaxy Note 20 Ultra 5G', codes: ['SM-N986B'], series: 'Galaxy Note 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Note 20 5G', codes: ['SM-N981B'], series: 'Galaxy Note 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Note 10+', codes: ['SM-N975F'], series: 'Galaxy Note 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy Note 10', codes: ['SM-N970F'], series: 'Galaxy Note 系列' },
+
+  // A Series
+  { brand: 'SAMSUNG', model: 'Galaxy A56 5G', codes: ['SM-A566B'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A36 5G', codes: ['SM-A366B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A55', codes: ['SM-A556B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A35', codes: ['SM-A356B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A25', codes: ['SM-A256B'], series: 'Galaxy A 系列' },
@@ -123,14 +208,14 @@ export const SMARTPHONE_DB: ModelInfo[] = [
   { brand: 'SAMSUNG', model: 'Galaxy A16 4G', codes: ['SM-A165F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A15 5G', codes: ['SM-A156B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A15 4G', codes: ['SM-A155F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A05s', codes: ['SM-A057F', 'SM-A057G'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A05s', codes: ['SM-A057F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A05', codes: ['SM-A055F'], series: 'Galaxy A 系列' },
 
   { brand: 'SAMSUNG', model: 'Galaxy A54 5G', codes: ['SM-A546B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A34 5G', codes: ['SM-A346B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A24 4G', codes: ['SM-A245F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A14 5G', codes: ['SM-A146B', 'SM-A146P'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A14 4G', codes: ['SM-A145F', 'SM-A145R'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A14 5G', codes: ['SM-A146B'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A14 4G', codes: ['SM-A145F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A04s', codes: ['SM-A047F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A04', codes: ['SM-A045F'], series: 'Galaxy A 系列' },
 
@@ -140,9 +225,9 @@ export const SMARTPHONE_DB: ModelInfo[] = [
   { brand: 'SAMSUNG', model: 'Galaxy A23 5G', codes: ['SM-A236B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A23 4G', codes: ['SM-A235F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A13 5G', codes: ['SM-A136B'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A13 4G', codes: ['SM-A135F', 'SM-A137F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A03s', codes: ['SM-A037F', 'SM-A037G'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A03', codes: ['SM-A035F', 'SM-A035G'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A13 4G', codes: ['SM-A135F'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A03s', codes: ['SM-A037F'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A03', codes: ['SM-A035F'], series: 'Galaxy A 系列' },
 
   { brand: 'SAMSUNG', model: 'Galaxy A72', codes: ['SM-A725F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A52s 5G', codes: ['SM-A528B'], series: 'Galaxy A 系列' },
@@ -153,8 +238,8 @@ export const SMARTPHONE_DB: ModelInfo[] = [
   { brand: 'SAMSUNG', model: 'Galaxy A32 4G', codes: ['SM-A325F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A22 5G', codes: ['SM-A226B'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A22 4G', codes: ['SM-A225F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A12', codes: ['SM-A125F', 'SM-A127F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A02s', codes: ['SM-A025F', 'SM-A025G'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A12', codes: ['SM-A125F'], series: 'Galaxy A 系列' },
+  { brand: 'SAMSUNG', model: 'Galaxy A02s', codes: ['SM-A025F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A02', codes: ['SM-A022F'], series: 'Galaxy A 系列' },
 
   { brand: 'SAMSUNG', model: 'Galaxy A71', codes: ['SM-A715F'], series: 'Galaxy A 系列' },
@@ -178,240 +263,208 @@ export const SMARTPHONE_DB: ModelInfo[] = [
   { brand: 'SAMSUNG', model: 'Galaxy A10s', codes: ['SM-A107F'], series: 'Galaxy A 系列' },
   { brand: 'SAMSUNG', model: 'Galaxy A10', codes: ['SM-A105F'], series: 'Galaxy A 系列' },
 
-  { brand: 'SAMSUNG', model: 'Galaxy A9 (2018)', codes: ['SM-A920F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A7 (2018)', codes: ['SM-A750F', 'SM-A750'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A6+ (2018)', codes: ['SM-A605F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A6 (2018)', codes: ['SM-A600F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A8 (2018)', codes: ['SM-A530F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A5 (2017)', codes: ['SM-A520F'], series: 'Galaxy A 系列' },
-  { brand: 'SAMSUNG', model: 'Galaxy A3 (2017)', codes: ['SM-A320F'], series: 'Galaxy A 系列' },
-
   // --- XIAOMI / REDMI ---
+  // Xiaomi
+  { brand: 'XIAOMI', model: 'Xiaomi 16 Ultra', codes: ['26030PN60G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 16 Pro', codes: ['26010PN60G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 16', codes: ['26010PN61G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 15 Ultra', codes: ['25030PN60G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 15 Pro', codes: ['2410DPN6CC'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 15', codes: ['24129PN74G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 14 Ultra', codes: ['24030PN60G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 14', codes: ['23127PN0CG'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 14T Pro', codes: ['2407FPN8EG'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 14T', codes: ['2406APNFAG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 13T Pro', codes: ['23078PND5G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 13T', codes: ['2306EP901G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 13 Pro', codes: ['2210132G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 13', codes: ['2211133G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 13 Lite', codes: ['2210129SG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 12T Pro', codes: ['22081212UG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 12T', codes: ['22071212AG'], series: 'Xiaomi 系列' },
-  
-  // Redmi Note
-  { brand: 'REDMI', model: 'Redmi Note 13 Pro+ 5G', codes: ['23090RA98G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 13 Pro 5G', codes: ['2312DRA50G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 13 5G', codes: ['2312DRAABG'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 13 4G', codes: ['23129RAA4G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 12 Pro 5G', codes: ['22101316G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 12 5G', codes: ['22111317G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 12 4G', codes: ['23021RAAEG', '23028RA60L'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 11 Pro 5G', codes: ['2201116SG'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 11', codes: ['2201117TG'], series: 'Redmi Note 系列' },
-
-  // Redmi Number Series
-  { brand: 'REDMI', model: 'Redmi 13C', codes: ['23100RN82L', '23108RN04Y'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 12', codes: ['23053RN02A'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 12C', codes: ['22120RN86G'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 10 2022', codes: ['21121119SG', '22011119UY'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 9A', codes: ['M2006C3LG'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 9C NFC', codes: ['M2006C3MNG'], series: 'Redmi 数字系列' },
-
-  // --- HONOR ---
-  { brand: 'HONOR', model: 'Honor Magic6 Pro', codes: ['BVL-N49'], series: 'Magic 系列' },
-  { brand: 'HONOR', model: 'Honor Magic5 Pro', codes: ['PGT-N19'], series: 'Magic 系列' },
-  { brand: 'HONOR', model: 'Honor 90', codes: ['REA-NX9'], series: '数字系列' },
-  { brand: 'HONOR', model: 'Honor 90 Lite', codes: ['CRT-NX1'], series: '数字系列' },
-  { brand: 'HONOR', model: 'Honor 70', codes: ['FNE-NX9'], series: '数字系列' },
-  { brand: 'HONOR', model: 'Honor X8b', codes: ['LLY-LX1'], series: 'X 系列' },
-  { brand: 'HONOR', model: 'Honor X8a', codes: ['CRT-LX1'], series: 'X 系列' },
-  { brand: 'HONOR', model: 'Honor X7b', codes: ['CLK-LX1'], series: 'X 系列' },
-  { brand: 'HONOR', model: 'Honor X6a', codes: ['WDY-LX1'], series: 'X 系列' },
-
-  // --- OPPO ---
-  // Find Series
-  { brand: 'OPPO', model: 'Find X8 Pro', codes: ['CPH2651'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X8', codes: ['CPH2659'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X7 Ultra', codes: ['PHY110'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X6 Pro', codes: ['PGEM10'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X5 Pro', codes: ['CPH2305'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X5', codes: ['CPH2307'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X5 Lite', codes: ['CPH2371'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X3 Pro', codes: ['CPH2173'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X3 Neo', codes: ['CPH2207'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find X3 Lite', codes: ['CPH2145'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find N3 Flip', codes: ['CPH2519'], series: 'Find 系列' },
-  { brand: 'OPPO', model: 'Find N2 Flip', codes: ['CPH2437'], series: 'Find 系列' },
-
-  // Reno Series
-  { brand: 'OPPO', model: 'Reno 12 Pro', codes: ['CPH2629'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 12', codes: ['CPH2625'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 12 FS 5G', codes: ['CPH2637'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 12 F 5G', codes: ['CPH2637'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 11 F 5G', codes: ['CPH2603'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 11 Pro', codes: ['CPH2599'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 11', codes: ['CPH2599'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 10 Pro', codes: ['CPH2525'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 10 5G', codes: ['CPH2531'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 8 Pro', codes: ['CPH2357'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 8 5G', codes: ['CPH2359'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 8 Lite 5G', codes: ['CPH2343'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 8 T', codes: ['CPH2481', 'CPH2505'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 7 5G', codes: ['CPH2371'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 7 Lite', codes: ['CPH2343'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 6 Pro', codes: ['CPH2247'], series: 'Reno 系列' },
-  { brand: 'OPPO', model: 'Reno 6 5G', codes: ['CPH2251'], series: 'Reno 系列' },
-
-  // A Series
-  { brand: 'OPPO', model: 'A80 5G', codes: ['CPH2639'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A79 5G', codes: ['CPH2557'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A78 5G', codes: ['CPH2483'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A78 4G', codes: ['CPH2495'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A60', codes: ['CPH2631'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A58', codes: ['CPH2577'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A57s', codes: ['CPH2385'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A57', codes: ['CPH2387'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A54 5G', codes: ['CPH2195'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A54s', codes: ['CPH2273'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A38', codes: ['CPH2579'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A40', codes: ['CPH2669'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A40m', codes: ['CPH2671'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A18', codes: ['CPH2591'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A17', codes: ['CPH2477'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A16s', codes: ['CPH2271'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A16', codes: ['CPH2269'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A15', codes: ['CPH2185'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A98 5G', codes: ['CPH2529'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A96', codes: ['CPH2333'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A94 5G', codes: ['CPH2211'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A77 5G', codes: ['CPH2339'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A76', codes: ['CPH2375'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A74 5G', codes: ['CPH2197'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A74 4G', codes: ['CPH2219'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A72', codes: ['CPH2067'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A53', codes: ['CPH2127'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A53s', codes: ['CPH2135'], series: 'A 系列' },
-  { brand: 'OPPO', model: 'A52', codes: ['CPH2061'], series: 'A 系列' },
-
-  // --- VIVO ---
-  // X Series
-  { brand: 'VIVO', model: 'X100 Pro', codes: ['V2308'], series: 'X 系列' },
-  { brand: 'VIVO', model: 'X90 Pro', codes: ['V2219'], series: 'X 系列' },
-  { brand: 'VIVO', model: 'X80 Pro', codes: ['V2145'], series: 'X 系列' },
-  { brand: 'VIVO', model: 'X80 Lite', codes: ['V2208'], series: 'X 系列' },
-  { brand: 'VIVO', model: 'X60 Pro', codes: ['V2046'], series: 'X 系列' },
-  { brand: 'VIVO', model: 'X51 5G', codes: ['V2006'], series: 'X 系列' },
-
-  // V Series
-  { brand: 'VIVO', model: 'V40 5G', codes: ['V2348'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V40 SE 5G', codes: ['V2339'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V40 Lite', codes: ['V2341'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V30 5G', codes: ['V2318'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V30 Lite', codes: ['V2317'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V29 5G', codes: ['V2250'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V29 Lite 5G', codes: ['V2244'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V23 5G', codes: ['V2130'], series: 'V 系列' },
-  { brand: 'VIVO', model: 'V21 5G', codes: ['V2050'], series: 'V 系列' },
-
-  // Y Series
-  { brand: 'VIVO', model: 'Y76 5G', codes: ['V2124'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y72 5G', codes: ['V2041'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y70', codes: ['V2023'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y55 5G', codes: ['V2127'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y52 5G', codes: ['V2053'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y36', codes: ['V2247'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y35', codes: ['V2205'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y33s', codes: ['V2109'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y28s 5G', codes: ['V2346'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y22s', codes: ['V2206'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y21s', codes: ['V2110'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y21', codes: ['V2111'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y20s', codes: ['V2029'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y16', codes: ['V2204'], series: 'Y 系列' },
-  { brand: 'VIVO', model: 'Y11s', codes: ['V2028'], series: 'Y 系列' },
-
-  // --- TCL ---
-  { brand: 'TCL', model: 'TCL 50 5G', codes: ['T509D'], series: '50 Series' },
-  { brand: 'TCL', model: 'TCL 50 SE', codes: ['T508D'], series: '50 Series' },
-  { brand: 'TCL', model: 'TCL 40 NxtPaper 5G', codes: ['T799H'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 40 NxtPaper', codes: ['T612B'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 40R 5G', codes: ['T771H'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 40 SE', codes: ['T610K'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 408', codes: ['T507U'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 406', codes: ['T506D'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 405', codes: ['T506D'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 403', codes: ['T431D'], series: '40 Series' },
-  { brand: 'TCL', model: 'TCL 30 5G', codes: ['T776H'], series: '30 Series' },
-  { brand: 'TCL', model: 'TCL 30+', codes: ['T676K'], series: '30 Series' },
-  { brand: 'TCL', model: 'TCL 30', codes: ['T676H'], series: '30 Series' },
-  { brand: 'TCL', model: 'TCL 30 SE', codes: ['6165H'], series: '30 Series' },
-  { brand: 'TCL', model: 'TCL 306', codes: ['6102H'], series: '30 Series' },
-  { brand: 'TCL', model: 'TCL 305', codes: ['6102D'], series: '30 Series' },
-  { brand: 'TCL', model: 'TCL 20 Pro 5G', codes: ['T810H'], series: '20 Series' },
-  { brand: 'TCL', model: 'TCL 20R 5G', codes: ['T767H'], series: '20 Series' },
-  { brand: 'TCL', model: 'TCL 20 SE', codes: ['T671H'], series: '20 Series' },
-
-  // --- XIAOMI / REDMI (Updates) ---
-  // Xiaomi Series
-  { brand: 'XIAOMI', model: 'Xiaomi 14T Pro', codes: ['2407FPN8EG'], series: 'Xiaomi 系列' },
-  { brand: 'XIAOMI', model: 'Xiaomi 14T', codes: ['2406APNFAG'], series: 'Xiaomi 系列' },
-  { brand: 'XIAOMI', model: 'Xiaomi 13 Lite', codes: ['2210129SG'], series: 'Xiaomi 系列' },
-  { brand: 'XIAOMI', model: 'Xiaomi 12 Lite', codes: ['2203129G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 12 Pro', codes: ['2201122G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 12', codes: ['2201123G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Xiaomi 12 Lite', codes: ['2203129G'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 12X', codes: ['2112123AG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 11T Pro', codes: ['2107113SG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 11T', codes: ['21081111RG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Xiaomi 11 Lite 5G NE', codes: ['2109119DG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Mi 11 Lite 5G', codes: ['M2101K9G'], series: 'Xiaomi 系列' },
-  { brand: 'XIAOMI', model: 'Mi 11 Lite 4G', codes: ['M2101K9AG'], series: 'Xiaomi 系列' },
   { brand: 'XIAOMI', model: 'Mi 11', codes: ['M2011K2G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 11 Ultra', codes: ['M2102K1G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 11i', codes: ['M2012K11G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 11 Lite', codes: ['M2101K9AG'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 10T Pro', codes: ['M2007J3SG'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 10T', codes: ['M2007J3SY'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 10T Lite', codes: ['M2007J17G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 10 Lite 5G', codes: ['M2002J9G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 10 Pro', codes: ['M2001J1G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 10', codes: ['M2001J2G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 9T Pro', codes: ['M1903F11G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 9T', codes: ['M1903F10G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 9 Lite', codes: ['M1904F3BG'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 9 SE', codes: ['M1903F2G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 9', codes: ['M1902F1G'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 8 Lite', codes: ['M1808D2TG'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 8', codes: ['M1803E1A'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi 8 Pro', codes: ['M1807E8A'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi A3', codes: ['M1906F9SH'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi A2', codes: ['M1804D2SG'], series: 'Xiaomi 系列' },
+  { brand: 'XIAOMI', model: 'Mi A2 Lite', codes: ['M1805D1SG'], series: 'Xiaomi 系列' },
 
-  // Redmi Note Series
+  // Redmi Note
+  { brand: 'REDMI', model: 'Redmi Note 15 Pro+', codes: ['25090RA98G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 15 Pro', codes: ['2512DRA50G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 15 5G', codes: ['2512DRAABG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 14 Pro+', codes: ['24090RA29G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 14 Pro', codes: ['24094RAD4G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 14 5G', codes: ['24094RAD1G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 14 4G', codes: ['23129RAA4G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 13 Pro+', codes: ['23090RA98G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 13 Pro', codes: ['2312DRA50G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 13 5G', codes: ['2312DRAABG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 13 4G', codes: ['23129RAA4G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 12 Pro+ 5G', codes: ['22101316UG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 12 Pro 5G', codes: ['22101316G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 12 5G', codes: ['22111317G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 12 4G', codes: ['23021RAAEG'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 12S', codes: ['23030RAC7G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 11S 5G', codes: ['22031116BG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 11 Pro 5G', codes: ['2201116SG'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 11S', codes: ['2201117SG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 11', codes: ['2201117TG'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 10 Pro', codes: ['M2101K6G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 10 5G', codes: ['M2103K19G'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 10S', codes: ['M2101K7BNY'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 10 5G', codes: ['M2103K19G'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 10', codes: ['M2101K7AG'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 9 Pro', codes: ['M2003J6B2G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 9T 5G', codes: ['M2007J22G'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 9S', codes: ['M2003J6A1G'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 9T', codes: ['M2007J22G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 9 Pro', codes: ['M2003J6B2G'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 9', codes: ['M2003J15SG'], series: 'Redmi Note 系列' },
-  { brand: 'REDMI', model: 'Redmi Note 8T', codes: ['M1908C3XG'], series: 'Redmi Note 系列' },
   { brand: 'REDMI', model: 'Redmi Note 8 Pro', codes: ['M1906G7G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 8', codes: ['M1908C3JG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 8T', codes: ['M1908C3XG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 7', codes: ['M1901F7G'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 6 Pro', codes: ['M1806E7TG'], series: 'Redmi Note 系列' },
+  { brand: 'REDMI', model: 'Redmi Note 5', codes: ['M1803E7SG'], series: 'Redmi Note 系列' },
 
-  // Redmi Number/A Series
+  // Redmi A Series
+  { brand: 'REDMI', model: 'Redmi A5', codes: ['25129RN51X'], series: 'Redmi A 系列' },
+  { brand: 'REDMI', model: 'Redmi A3', codes: ['23129RN51X'], series: 'Redmi A 系列' },
+  { brand: 'REDMI', model: 'Redmi A2', codes: ['23028RN4DG'], series: 'Redmi A 系列' },
+  { brand: 'REDMI', model: 'Redmi A1', codes: ['220733SL'], series: 'Redmi A 系列' },
+
+  // Redmi C Series (Number Series)
+  { brand: 'REDMI', model: 'Redmi 15C', codes: ['25100RN82L'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 14C', codes: ['2409BRN2CA', '2409BRN2CG', '2409BRN2CY', '2409BRN2CL'], series: 'Redmi 数字系列' },
   { brand: 'REDMI', model: 'Redmi 13', codes: ['24049RN28L'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 13C', codes: ['23100RN82L'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 13C 5G', codes: ['23124RN87G'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 12 5G', codes: ['23076RN8DY'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 12C', codes: ['22120RN86G'], series: 'Redmi 数字系列' },
   { brand: 'REDMI', model: 'Redmi 10C', codes: ['220333QAG'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 10 5G', codes: ['22041219NY'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 10', codes: ['21061119AG'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 9T', codes: ['M2010J19SG'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi 9C', codes: ['M2006C3MG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 12', codes: ['23053RN02A'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 10 2022', codes: ['21121119SG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 10', codes: ['M2101K7DN'], series: 'Redmi 数字系列' },
   { brand: 'REDMI', model: 'Redmi 9', codes: ['M2004J19G'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi A3', codes: ['23129RN51X'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi A2', codes: ['23028RN4DG'], series: 'Redmi 数字系列' },
-  { brand: 'REDMI', model: 'Redmi A1', codes: ['220733SL'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 9A', codes: ['M2006C3LG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 9C', codes: ['M2006C3MG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 8', codes: ['M1908C3IG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 8A', codes: ['M1908C3KG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 7', codes: ['M1810F6LG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 7A', codes: ['M1903C3EG'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 6', codes: ['M1804C3DG', 'M1804C3DH', 'M1804C3DI'], series: 'Redmi 数字系列' },
+  { brand: 'REDMI', model: 'Redmi 6A', codes: ['M1804C3CG', 'M1804C3CH', 'M1804C3CI'], series: 'Redmi 数字系列' },
 
-  // --- POCO (Often grouped with Xiaomi but distinct) ---
-  { brand: 'POCO', model: 'POCO F6 Pro', codes: ['24050PB6H'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO F6', codes: ['24069PC21G'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO X6 Pro', codes: ['2311DRK48G'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO X6 5G', codes: ['23122PCD1G'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO M6 Pro', codes: ['2312FPCA6G'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO F5 Pro', codes: ['23013PC75G'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO F5', codes: ['23049PCD8G'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO X5 Pro 5G', codes: ['22101320G'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO X5 5G', codes: ['22111317PG'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO M5s', codes: ['2207117BPG'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO M5', codes: ['22071219CG'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO X3 Pro', codes: ['M2102J20SG'], series: 'POCO 系列' },
-  { brand: 'POCO', model: 'POCO X3 NFC', codes: ['M2007J20CG'], series: 'POCO 系列' },
+  // --- HONOR ---
+  { brand: 'HONOR', model: 'Honor Magic 8 Pro', codes: ['BVL-N59'], series: 'Magic 系列' },
+  { brand: 'HONOR', model: 'Honor Magic 7 Pro', codes: ['PTP-AN10'], series: 'Magic 系列' },
+  { brand: 'HONOR', model: 'Honor Magic 6 Pro', codes: ['BVL-N49'], series: 'Magic 系列' },
+  { brand: 'HONOR', model: 'Honor 90', codes: ['REA-NX9'], series: '数字系列' },
+  { brand: 'HONOR', model: 'Honor 70', codes: ['FNE-NX9'], series: '数字系列' },
+  { brand: 'HONOR', model: 'Honor X8b', codes: ['LLY-LX1'], series: 'X 系列' },
+  { brand: 'HONOR', model: 'Honor X7b', codes: ['CLK-LX1'], series: 'X 系列' },
 
-  { brand: 'HUAWEI', model: 'P60 Pro', codes: ['MNA-LX9'], series: 'P 系列' },
-  { brand: 'HUAWEI', model: 'P50 Pro', codes: ['JAD-LX9'], series: 'P 系列' },
-  { brand: 'HUAWEI', model: 'Nova 11i', codes: ['MAO-LX9'], series: 'Nova 系列' },
-  { brand: 'HUAWEI', model: 'Nova 10 SE', codes: ['BNE-LX1'], series: 'Nova 系列' },
-  { brand: 'HUAWEI', model: 'Nova 9', codes: ['NAM-LX9'], series: 'Nova 系列' },
-  { brand: 'HUAWEI', model: 'Nova Y90', codes: ['CTR-LX1'], series: 'Nova 系列' },
-  { brand: 'HUAWEI', model: 'Nova Y70', codes: ['MGA-LX9'], series: 'Nova 系列' }
+  // --- OPPO ---
+  { brand: 'OPPO', model: 'Reno 14 Pro', codes: ['CPH2729'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 13 Pro', codes: ['CPH2689'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 12 Pro', codes: ['CPH2629'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 12', codes: ['CPH2625'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 11 Pro', codes: ['CPH2599'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 11 F 5G', codes: ['CPH2603'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 10 Pro', codes: ['CPH2525'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 10 5G', codes: ['CPH2531'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 8 Pro', codes: ['CPH2357'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 8 5G', codes: ['CPH2359'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 7 Pro', codes: ['CPH2293'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno6 Pro 5G', codes: ['CPH2249'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno6 Pro 5G (Snapdragon)', codes: ['CPH2247'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno6 5G', codes: ['CPH2251'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno6 4G', codes: ['CPH2235'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 5 5G', codes: ['CPH2145'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Reno 5 4G', codes: ['CPH2159'], series: 'Reno 系列' },
+  { brand: 'OPPO', model: 'Find X8 Pro', codes: ['CPH2651'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X7 Ultra', codes: ['PHY110'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X6 Pro', codes: ['PGEM10'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X5 Pro', codes: ['CPH2305'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X5', codes: ['CPH2307'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X3 Pro', codes: ['CPH2173'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X2 Pro', codes: ['CPH2025'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X2', codes: ['CPH2023'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X2 Neo', codes: ['CPH2009'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'Find X2 Lite', codes: ['CPH2005'], series: 'Find 系列' },
+  { brand: 'OPPO', model: 'A80 5G', codes: ['CPH2639'], series: 'A 系列' },
+  { brand: 'OPPO', model: 'A79 5G', codes: ['CPH2557'], series: 'A 系列' },
+  { brand: 'OPPO', model: 'A98 5G', codes: ['CPH2529'], series: 'A 系列' },
+  { brand: 'OPPO', model: 'A78 5G', codes: ['CPH2483'], series: 'A 系列' },
+  { brand: 'OPPO', model: 'A58', codes: ['CPH2577'], series: 'A 系列' },
+  { brand: 'OPPO', model: 'A38', codes: ['CPH2579'], series: 'A 系列' },
+  { brand: 'OPPO', model: 'A17', codes: ['CPH2477'], series: 'A 系列' },
+
+  // --- VIVO ---
+  { brand: 'VIVO', model: 'X200 Pro', codes: ['V2413'], series: 'X 系列' },
+  { brand: 'VIVO', model: 'X100 Pro', codes: ['V2308'], series: 'X 系列' },
+  { brand: 'VIVO', model: 'V40 5G', codes: ['V2348'], series: 'V 系列' },
+  { brand: 'VIVO', model: 'Y76 5G', codes: ['V2124'], series: 'Y 系列' },
+
+  // --- GOOGLE ---
+  { brand: 'GOOGLE', model: 'Pixel 9 Pro', codes: ['G4YQ8'], series: 'Pixel 系列' },
+  { brand: 'GOOGLE', model: 'Pixel 9', codes: ['G1B60'], series: 'Pixel 系列' },
+  { brand: 'GOOGLE', model: 'Pixel 8 Pro', codes: ['GC3VE'], series: 'Pixel 系列' },
+  { brand: 'GOOGLE', model: 'Pixel 8', codes: ['GKWS6'], series: 'Pixel 系列' },
+  { brand: 'GOOGLE', model: 'Pixel 7a', codes: ['GHL1X'], series: 'Pixel 系列' },
+
+  // --- ONEPLUS ---
+  { brand: 'ONEPLUS', model: 'OnePlus 13', codes: ['CPH2681'], series: 'OnePlus 系列' },
+  { brand: 'ONEPLUS', model: 'OnePlus 12', codes: ['CPH2581'], series: 'OnePlus 系列' },
+  { brand: 'ONEPLUS', model: 'OnePlus 12R', codes: ['CPH2611'], series: 'OnePlus 系列' },
+  { brand: 'ONEPLUS', model: 'OnePlus 11', codes: ['CPH2449'], series: 'OnePlus 系列' },
+  { brand: 'ONEPLUS', model: 'OnePlus Nord 4', codes: ['CPH2693'], series: 'Nord 系列' },
+  { brand: 'ONEPLUS', model: 'OnePlus Nord 3', codes: ['CPH2493'], series: 'Nord 系列' },
+
+  // --- REALME ---
+  { brand: 'REALME', model: 'Realme GT 6', codes: ['RMX3851'], series: 'GT 系列' },
+  { brand: 'REALME', model: 'Realme 12 Pro+', codes: ['RMX3840'], series: '数字系列' },
+  { brand: 'REALME', model: 'Realme 11 Pro+', codes: ['RMX3741'], series: '数字系列' },
+  { brand: 'REALME', model: 'Realme C67', codes: ['RMX3890'], series: 'C 系列' },
+  { brand: 'REALME', model: 'Realme C55', codes: ['RMX3710'], series: 'C 系列' },
+
+  // --- MOTOROLA ---
+  { brand: 'MOTOROLA', model: 'Edge 50 Pro', codes: ['XT2403'], series: 'Edge 系列' },
+  { brand: 'MOTOROLA', model: 'Edge 40 Pro', codes: ['XT2301'], series: 'Edge 系列' },
+  { brand: 'MOTOROLA', model: 'Moto G85', codes: ['XT2447'], series: 'Moto G 系列' },
+  { brand: 'MOTOROLA', model: 'Moto G84', codes: ['XT2347'], series: 'Moto G 系列' },
+
+  // --- SONY ---
+  { brand: 'SONY', model: 'Xperia 1 VI', codes: ['XQ-EC54'], series: 'Xperia 1' },
+  { brand: 'SONY', model: 'Xperia 1 V', codes: ['XQ-DQ54'], series: 'Xperia 1' },
+  { brand: 'SONY', model: 'Xperia 10 VI', codes: ['XQ-ES54'], series: 'Xperia 10' }
 ];
+
+RAW_SMARTPHONE_DB.push(
+  ...asModelInfoArray(HONOR_HONOR_GENERATED_MODELS),
+  ...asModelInfoArray(REALME_REALME_GENERATED_MODELS),
+  ...asModelInfoArray(VIVO_VIVO_GENERATED_MODELS),
+  ...asModelInfoArray(MOTOROLA_MODELS)
+);
+
+export const SMARTPHONE_DB: ModelInfo[] = canonicalizeModels(RAW_SMARTPHONE_DB);

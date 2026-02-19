@@ -1,0 +1,1749 @@
+{
+  "generatedAt": "2026-02-17T12:34:54.908Z",
+  "models": [
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch SE 2 (40mm)",
+      "model_code": "A2722, A2725, A2855",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch SE 2 (44mm)",
+      "model_code": "A2723, A2724, A2856",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 10 (42mm)",
+      "model_code": "A3331, A3450",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 10 (46mm)",
+      "model_code": "A3333, A3451",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 7 (41mm)",
+      "model_code": "A2473, A2475, A2476",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 7 (45mm)",
+      "model_code": "A2474, A2477, A2478",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 8 (41mm)",
+      "model_code": "A2770, A2772, A2773",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 8 (45mm)",
+      "model_code": "A2771, A2774, A2775",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 9 (41mm)",
+      "model_code": "A2982, A2983",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Series 9 (45mm)",
+      "model_code": "A2984, A2985",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Ultra",
+      "model_code": "A2622, A2684, A2859",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "Apple Watch Ultra 2",
+      "model_code": "A2986, A2987",
+      "category": "Apple Watch 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad (10th Gen)",
+      "model_code": "A2696, A2757, A2777",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad (9th Gen)",
+      "model_code": "A2602, A2604, A2603",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Air (5th Gen)",
+      "model_code": "A2588, A2589, A2591",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Air 11 (M2)",
+      "model_code": "A2902, A2903, A2904",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Air 13 (M2)",
+      "model_code": "A2898, A2899, A2900",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad mini (6th Gen)",
+      "model_code": "A2567, A2568, A2569",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad mini (A17 Pro)",
+      "model_code": "A2993, A2995, A2996",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Pro 11 (3rd Gen)",
+      "model_code": "A2377, A2459, A2301",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Pro 11 (4th Gen)",
+      "model_code": "A2759, A2435, A2761",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Pro 11 (M4)",
+      "model_code": "A2836, A2837, A3006",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Pro 12.9 (5th Gen)",
+      "model_code": "A2378, A2461, A2379",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Pro 12.9 (6th Gen)",
+      "model_code": "A2436, A2764, A2437",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPad Pro 13 (M4)",
+      "model_code": "A2925, A2926, A3007",
+      "category": "iPad 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 11",
+      "model_code": "A2221, A2111, A2223",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 11 Pro",
+      "model_code": "A2215, A2160, A2217",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 11 Pro Max",
+      "model_code": "A2218, A2161, A2220",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 12",
+      "model_code": "A2403, A2172, A2402, A2404",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 12 mini",
+      "model_code": "A2399, A2176, A2398, A2400, A2401",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 12 Pro",
+      "model_code": "A2407, A2341, A2406, A2408",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 12 Pro Max",
+      "model_code": "A2411, A2342, A2410, A2412",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 13",
+      "model_code": "A2633, A2482, A2631, A2634, A2635",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 13 mini",
+      "model_code": "A2628, A2481, A2626, A2629, A2630",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 13 Pro",
+      "model_code": "A2638, A2483, A2636, A2639, A2640",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 13 Pro Max",
+      "model_code": "A2643, A2484, A2641, A2644, A2645",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 14",
+      "model_code": "A2882, A2881, A2883, A2649",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 14 Plus",
+      "model_code": "A2886, A2885, A2887, A2632",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 14 Pro",
+      "model_code": "A2890, A2889, A2891, A2650",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 14 Pro Max",
+      "model_code": "A2894, A2893, A2895, A2651",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 15",
+      "model_code": "A3090, A3089, A3092, A2846",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 15 Plus",
+      "model_code": "A3094, A3093, A3096, A2847",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 15 Pro",
+      "model_code": "A3102, A3101, A3104, A2848",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 15 Pro Max",
+      "model_code": "A3106, A3105, A3108, A2849",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 16",
+      "model_code": "A3287, A3288, A3289",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 16 Plus",
+      "model_code": "A3290, A3291, A3292",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 16 Pro",
+      "model_code": "A3293, A3294, A3295",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 16 Pro Max",
+      "model_code": "A3296, A3297, A3298",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 17",
+      "model_code": "A3487, A3488",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 17 Plus",
+      "model_code": "A3490, A3491",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 17 Pro",
+      "model_code": "A3493, A3494",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone 17 Pro Max",
+      "model_code": "A3496, A3497",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone SE (2020)",
+      "model_code": "A2296, A2275, A2298",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone SE (2022)",
+      "model_code": "A2783, A2595, A2782, A2784, A2785",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "APPLE",
+      "model": "iPhone SE (4th Gen)",
+      "model_code": "A3500, A3501",
+      "category": "iPhone 系列",
+      "rows": 7,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "GOOGLE",
+      "model": "Pixel 7a",
+      "model_code": "GHL1X",
+      "category": "Pixel 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "GOOGLE",
+      "model": "Pixel 8",
+      "model_code": "GKWS6",
+      "category": "Pixel 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "GOOGLE",
+      "model": "Pixel 8 Pro",
+      "model_code": "GC3VE",
+      "category": "Pixel 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "GOOGLE",
+      "model": "Pixel 9",
+      "model_code": "G1B60",
+      "category": "Pixel 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "GOOGLE",
+      "model": "Pixel 9 Pro",
+      "model_code": "G4YQ8",
+      "category": "Pixel 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "HONOR",
+      "model": "Honor 70",
+      "model_code": "FNE-NX9",
+      "category": "数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "HONOR",
+      "model": "Honor 90",
+      "model_code": "REA-NX9",
+      "category": "数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "HONOR",
+      "model": "Honor Magic 6 Pro",
+      "model_code": "BVL-N49",
+      "category": "Magic 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "HONOR",
+      "model": "Honor Magic 7 Pro",
+      "model_code": "PTP-AN10",
+      "category": "Magic 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "HONOR",
+      "model": "Honor Magic 8 Pro",
+      "model_code": "BVL-N59",
+      "category": "Magic 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "HONOR",
+      "model": "Honor X7b",
+      "model_code": "CLK-LX1",
+      "category": "X 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "HONOR",
+      "model": "Honor X8b",
+      "model_code": "LLY-LX1",
+      "category": "X 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "MOTOROLA",
+      "model": "Edge 40 Pro",
+      "model_code": "XT2301",
+      "category": "Edge 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "MOTOROLA",
+      "model": "Edge 50 Pro",
+      "model_code": "XT2403",
+      "category": "Edge 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "MOTOROLA",
+      "model": "Moto G84",
+      "model_code": "XT2347",
+      "category": "Moto G 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "MOTOROLA",
+      "model": "Moto G85",
+      "model_code": "XT2447",
+      "category": "Moto G 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "ONEPLUS",
+      "model": "OnePlus 11",
+      "model_code": "CPH2449",
+      "category": "OnePlus 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "ONEPLUS",
+      "model": "OnePlus 12",
+      "model_code": "CPH2581",
+      "category": "OnePlus 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "ONEPLUS",
+      "model": "OnePlus 13",
+      "model_code": "CPH2681",
+      "category": "OnePlus 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "ONEPLUS",
+      "model": "OnePlus Nord 3",
+      "model_code": "CPH2493",
+      "category": "Nord 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "ONEPLUS",
+      "model": "OnePlus Nord 4",
+      "model_code": "CPH2693",
+      "category": "Nord 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "OPPO",
+      "model": "A79 5G",
+      "model_code": "CPH2557",
+      "category": "A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "OPPO",
+      "model": "A80 5G",
+      "model_code": "CPH2639",
+      "category": "A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "OPPO",
+      "model": "Find X7 Ultra",
+      "model_code": "PHY110",
+      "category": "Find 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "OPPO",
+      "model": "Find X8 Pro",
+      "model_code": "CPH2651",
+      "category": "Find 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "OPPO",
+      "model": "Reno 12 Pro",
+      "model_code": "CPH2629",
+      "category": "Reno 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "OPPO",
+      "model": "Reno 13 Pro",
+      "model_code": "CPH2689",
+      "category": "Reno 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "OPPO",
+      "model": "Reno 14 Pro",
+      "model_code": "CPH2729",
+      "category": "Reno 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REALME",
+      "model": "Realme 11 Pro+",
+      "model_code": "RMX3741",
+      "category": "数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REALME",
+      "model": "Realme 12 Pro+",
+      "model_code": "RMX3840",
+      "category": "数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REALME",
+      "model": "Realme C55",
+      "model_code": "RMX3710",
+      "category": "C 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REALME",
+      "model": "Realme C67",
+      "model_code": "RMX3890",
+      "category": "C 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REALME",
+      "model": "Realme GT 6",
+      "model_code": "RMX3851",
+      "category": "GT 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi 10 2022",
+      "model_code": "21121119SG",
+      "category": "Redmi 数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi 10C",
+      "model_code": "220333QAG",
+      "category": "Redmi 数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi 12",
+      "model_code": "23053RN02A",
+      "category": "Redmi 数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi 12C",
+      "model_code": "22120RN86G",
+      "category": "Redmi 数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi 13C",
+      "model_code": "23100RN82L",
+      "category": "Redmi 数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi 13C 5G",
+      "model_code": "23124RN87G",
+      "category": "Redmi 数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi 15C",
+      "model_code": "25100RN82L",
+      "category": "Redmi 数字系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi A1",
+      "model_code": "220733SL",
+      "category": "Redmi A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi A2",
+      "model_code": "23028RN4DG",
+      "category": "Redmi A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi A3",
+      "model_code": "23129RN51X",
+      "category": "Redmi A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi A5",
+      "model_code": "25129RN51X",
+      "category": "Redmi A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 11 Pro 5G",
+      "model_code": "2201116SG",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 12 5G",
+      "model_code": "22111317G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 12 Pro 5G",
+      "model_code": "22101316G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 13 5G",
+      "model_code": "2312DRAABG",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 13 Pro",
+      "model_code": "2312DRA50G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 13 Pro+",
+      "model_code": "23090RA98G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 14 5G",
+      "model_code": "24094RAD1G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 14 Pro",
+      "model_code": "24094RAD4G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 14 Pro+",
+      "model_code": "24090RA29G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 15 5G",
+      "model_code": "2512DRAABG",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 15 Pro",
+      "model_code": "2512DRA50G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "REDMI",
+      "model": "Redmi Note 15 Pro+",
+      "model_code": "25090RA98G",
+      "category": "Redmi Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A01",
+      "model_code": "SM-A015F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A02",
+      "model_code": "SM-A022F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A02s",
+      "model_code": "SM-A025F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A03",
+      "model_code": "SM-A035F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A03s",
+      "model_code": "SM-A037F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A04",
+      "model_code": "SM-A045F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A04s",
+      "model_code": "SM-A047F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A05",
+      "model_code": "SM-A055F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A05s",
+      "model_code": "SM-A057F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A10",
+      "model_code": "SM-A105F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A10s",
+      "model_code": "SM-A107F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A11",
+      "model_code": "SM-A115F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A12",
+      "model_code": "SM-A125F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A13 4G",
+      "model_code": "SM-A135F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A13 5G",
+      "model_code": "SM-A136B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A14 4G",
+      "model_code": "SM-A145F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A14 5G",
+      "model_code": "SM-A146B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A15 4G",
+      "model_code": "SM-A155F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A15 5G",
+      "model_code": "SM-A156B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A16 4G",
+      "model_code": "SM-A165F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A16 5G",
+      "model_code": "SM-A166B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A20",
+      "model_code": "SM-A205F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A20e",
+      "model_code": "SM-A202F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A20s",
+      "model_code": "SM-A207F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A21",
+      "model_code": "SM-A215U",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A21s",
+      "model_code": "SM-A217F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A22 4G",
+      "model_code": "SM-A225F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A22 5G",
+      "model_code": "SM-A226B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A23 4G",
+      "model_code": "SM-A235F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A23 5G",
+      "model_code": "SM-A236B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A24 4G",
+      "model_code": "SM-A245F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A25",
+      "model_code": "SM-A256B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A30",
+      "model_code": "SM-A305F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A30s",
+      "model_code": "SM-A307F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A31",
+      "model_code": "SM-A315F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A32 4G",
+      "model_code": "SM-A325F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A32 5G",
+      "model_code": "SM-A326B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A33 5G",
+      "model_code": "SM-A336B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A34 5G",
+      "model_code": "SM-A346B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A35",
+      "model_code": "SM-A356B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A36 5G",
+      "model_code": "SM-A366B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A40",
+      "model_code": "SM-A405F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A41",
+      "model_code": "SM-A415F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A42 5G",
+      "model_code": "SM-A426B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A50",
+      "model_code": "SM-A505F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A51",
+      "model_code": "SM-A515F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A51 5G",
+      "model_code": "SM-A516B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A52 4G",
+      "model_code": "SM-A525F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A52 5G",
+      "model_code": "SM-A526B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A52s 5G",
+      "model_code": "SM-A528B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A53 5G",
+      "model_code": "SM-A536B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A54 5G",
+      "model_code": "SM-A546B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A55",
+      "model_code": "SM-A556B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A56 5G",
+      "model_code": "SM-A566B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A70",
+      "model_code": "SM-A705F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A71",
+      "model_code": "SM-A715F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A72",
+      "model_code": "SM-A725F",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy A73 5G",
+      "model_code": "SM-A736B",
+      "category": "Galaxy A 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Note 10",
+      "model_code": "SM-N970F",
+      "category": "Galaxy Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Note 10+",
+      "model_code": "SM-N975F",
+      "category": "Galaxy Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Note 20 5G",
+      "model_code": "SM-N981B",
+      "category": "Galaxy Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Note 20 Ultra 5G",
+      "model_code": "SM-N986B",
+      "category": "Galaxy Note 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S21",
+      "model_code": "SM-G991B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S21 Ultra",
+      "model_code": "SM-G998B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S21+",
+      "model_code": "SM-G996B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S22",
+      "model_code": "SM-S901B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S22 Ultra",
+      "model_code": "SM-S908B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S22+",
+      "model_code": "SM-S906B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S23",
+      "model_code": "SM-S911B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S23 Ultra",
+      "model_code": "SM-S918B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S23+",
+      "model_code": "SM-S916B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S24",
+      "model_code": "SM-S921B, SM-S921U",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S24 Ultra",
+      "model_code": "SM-S928B, SM-S928U",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S24+",
+      "model_code": "SM-S926B, SM-S926U",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S25",
+      "model_code": "SM-S931B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S25 Ultra",
+      "model_code": "SM-S938B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S25+",
+      "model_code": "SM-S936B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S26",
+      "model_code": "SM-S941B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S26 Ultra",
+      "model_code": "SM-S948B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy S26+",
+      "model_code": "SM-S946B",
+      "category": "Galaxy S 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Flip 3",
+      "model_code": "SM-F711B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Flip 4",
+      "model_code": "SM-F721B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Flip 5",
+      "model_code": "SM-F731B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Flip 6",
+      "model_code": "SM-F741B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Fold 3",
+      "model_code": "SM-F926B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Fold 4",
+      "model_code": "SM-F936B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Fold 5",
+      "model_code": "SM-F946B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SAMSUNG",
+      "model": "Galaxy Z Fold 6",
+      "model_code": "SM-F956B",
+      "category": "Galaxy Z 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SONY",
+      "model": "Xperia 1 V",
+      "model_code": "XQ-DQ54",
+      "category": "Xperia 1",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SONY",
+      "model": "Xperia 1 VI",
+      "model_code": "XQ-EC54",
+      "category": "Xperia 1",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "SONY",
+      "model": "Xperia 10 VI",
+      "model_code": "XQ-ES54",
+      "category": "Xperia 10",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "VIVO",
+      "model": "V40 5G",
+      "model_code": "V2348",
+      "category": "V 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "VIVO",
+      "model": "X100 Pro",
+      "model_code": "V2308",
+      "category": "X 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "VIVO",
+      "model": "X200 Pro",
+      "model_code": "V2413",
+      "category": "X 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "VIVO",
+      "model": "Y76 5G",
+      "model_code": "V2124",
+      "category": "Y 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 13",
+      "model_code": "2211133G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 13 Pro",
+      "model_code": "2210132G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 13T",
+      "model_code": "2306EP901G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 13T Pro",
+      "model_code": "23078PND5G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 14",
+      "model_code": "23127PN0CG",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 14 Ultra",
+      "model_code": "24030PN60G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 15",
+      "model_code": "24129PN74G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 15 Pro",
+      "model_code": "2410DPN6CC",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 15 Ultra",
+      "model_code": "25030PN60G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 16",
+      "model_code": "26010PN61G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 16 Pro",
+      "model_code": "26010PN60G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    },
+    {
+      "brand": "XIAOMI",
+      "model": "Xiaomi 16 Ultra",
+      "model_code": "26030PN60G",
+      "category": "Xiaomi 系列",
+      "rows": 5,
+      "missingModelCodeRows": 0
+    }
+  ]
+}

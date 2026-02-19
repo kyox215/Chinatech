@@ -19,6 +19,143 @@ function getSupabase() {
 }
 
 // Helper functions (copied from script for consistency)
+function normalizeBrand(value: string) {
+  return (value || '').trim().toUpperCase();
+}
+
+function normalizeModel(value: string) {
+  return (value || '').trim();
+}
+
+function normalizeRepairItem(value: string) {
+  return (value || '').trim();
+}
+
+function normalizeQuality(value: string) {
+  const q = (value || '').trim().toLowerCase();
+  if (!q) return 'standard';
+  if (q === 'high_cap') return 'altcap';
+  return q;
+}
+
+function parsePrice(raw: string) {
+  const cleaned = (raw || '')
+    .replace(/€/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(',', '.');
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+function makeKey(brand: string, model: string, repairItem: string, quality: string) {
+  return `${normalizeBrand(brand)}|${normalizeModel(model)}|${normalizeRepairItem(repairItem)}|${normalizeQuality(quality)}`;
+}
+
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
+
+  const pushField = () => {
+    row.push(field);
+    field = '';
+  };
+  const pushRow = () => {
+    if (row.length === 1 && row[0].trim() === '') {
+      row = [];
+      return;
+    }
+    rows.push(row);
+    row = [];
+  };
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    if (ch === '"') {
+      const next = text[i + 1];
+      if (inQuotes && next === '"') {
+        field += '"';
+        i += 1;
+        continue;
+      }
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (!inQuotes && (ch === ',' || ch === '\t')) {
+      pushField();
+      continue;
+    }
+
+    if (!inQuotes && (ch === '\n' || ch === '\r')) {
+      if (ch === '\r' && text[i + 1] === '\n') i += 1;
+      pushField();
+      pushRow();
+      continue;
+    }
+
+    field += ch;
+  }
+
+  pushField();
+  pushRow();
+
+  return rows
+    .map((r) => r.map((c) => (c || '').trim()))
+    .filter((r) => r.some((c) => c.trim().length > 0));
+}
+
+type CsvHeaderKey =
+  | 'brand'
+  | 'model'
+  | 'repair_item'
+  | 'quality'
+  | 'price'
+  | 'warranty'
+  | 'repair_type'
+  | 'category'
+  | 'model_code';
+
+function normalizeHeaderName(value: string) {
+  return (value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[_-]/g, ' ');
+}
+
+function mapHeaderKey(header: string): CsvHeaderKey | null {
+  const h = normalizeHeaderName(header);
+
+  if (h === 'brand' || h === 'marca' || h === '品牌') return 'brand';
+  if (h === 'model' || h === 'modello' || h === '型号') return 'model';
+
+  if (
+    h === 'repair item' ||
+    h === 'repair' ||
+    h === 'item' ||
+    h === 'problema' ||
+    h === 'problem' ||
+    h === '故障' ||
+    h === '维修项' ||
+    h === 'repair item name'
+  )
+    return 'repair_item';
+
+  if (h === 'quality' || h === '品质' || h === 'quality type') return 'quality';
+  if (h === 'price' || h === 'prezzo totale' || h === 'total price' || h === '价格') return 'price';
+
+  if (h === 'warranty' || h === 'garanzia' || h === '保修') return 'warranty';
+  if (h === 'repair type' || h === 'repair_type' || h === 'type' || h === '类型') return 'repair_type';
+  if (h === 'category' || h === '分类' || h === 'series') return 'category';
+  if (h === 'model code' || h === 'model_code' || h === 'code' || h === '代号') return 'model_code';
+
+  return null;
+}
+
 function inferCategory(brand: string, model: string): string {
   const b = brand.toUpperCase().trim();
   const m = model.toUpperCase().trim();
@@ -141,8 +278,56 @@ function calculatePriority(brand: string, model: string, category: string): numb
     return p;
 }
 
+async function fetchExistingForImport(brands: string[], models: string[]) {
+  const supabase = getSupabase();
+  const existing: Array<{
+    id: string;
+    brand: string;
+    model: string;
+    repair_item: string;
+    quality: string;
+    price: number | null;
+    warranty: string | null;
+    repair_type: string | null;
+    category: string | null;
+    model_code: string | null;
+    priority: number | null;
+  }> = [];
+
+  let query = supabase
+    .from('repair_quotes')
+    .select('id,brand,model,repair_item,quality,price,warranty,repair_type,category,model_code,priority')
+    .in('brand', brands);
+
+  if (models.length > 0 && models.length <= 500) {
+    query = query.in('model', models);
+  }
+
+  let from = 0;
+  const PAGE_SIZE = 1000;
+  while (true) {
+    const { data, error } = await query.range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    const rows = (data || []) as typeof existing;
+    existing.push(...rows);
+    if (rows.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+
+  const byKey = new Map<string, (typeof existing)[number]>();
+  for (const row of existing) {
+    const key = makeKey(row.brand, row.model, row.repair_item, row.quality);
+    if (!byKey.has(key)) byKey.set(key, row);
+  }
+
+  return byKey;
+}
+
 export async function POST(req: Request) {
   try {
+    const url = new URL(req.url);
+    const dryRun = url.searchParams.get('dryRun') === '1' || url.searchParams.get('dryRun') === 'true';
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
@@ -151,77 +336,181 @@ export async function POST(req: Request) {
     }
 
     const text = await file.text();
-    const lines = text.split('\n').filter(l => l.trim().length > 0);
-    
-    // Skip header if present
-    const startIndex = lines[0].toLowerCase().includes('brand') ? 1 : 0;
-    
-    const records = [];
-    
-    for (let i = startIndex; i < lines.length; i++) {
-        const line = lines[i];
-        // Simple CSV parser handling quotes
-        const cols = [];
-        let current = '';
-        let inQuotes = false;
-        
-        for (let j = 0; j < line.length; j++) {
-            const char = line[j];
-            if (char === '"') {
-            inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-            cols.push(current.trim());
-            current = '';
-            } else {
-            current += char;
-            }
-        }
-        cols.push(current.trim());
+    const rows = parseCsv(text);
 
-        if (cols.length < 5) continue;
-
-        const brand = cols[0].replace(/^"|"$/g, '');
-        const model = cols[1].replace(/^"|"$/g, '');
-        const repairItem = cols[2].replace(/^"|"$/g, '');
-        const quality = cols[3].replace(/^"|"$/g, '') || 'standard';
-        const priceStr = cols[4].replace(/^"|"$/g, '').replace('€', '').trim();
-        const warranty = '6 MESI'; // Force 6 MESI
-
-        const price = parseFloat(priceStr);
-        if (isNaN(price)) continue;
-
-        const category = inferCategory(brand, model);
-        const priority = calculatePriority(brand, model, category);
-
-        records.push({
-            brand,
-            model,
-            repair_item: repairItem,
-            repair_type: inferRepairType(repairItem),
-            category,
-            quality,
-            price,
-            warranty,
-            priority,
-            is_unstable: false
-        });
+    if (rows.length === 0) {
+      return NextResponse.json({ error: 'Empty CSV' }, { status: 400 });
     }
 
-    // Insert data
+    const headerRow = rows[0];
+    const headerMap = new Map<number, CsvHeaderKey>();
+    for (let i = 0; i < headerRow.length; i++) {
+      const key = mapHeaderKey(headerRow[i]);
+      if (key) headerMap.set(i, key);
+    }
+    const hasHeader = headerMap.size >= 3 && (Array.from(headerMap.values()).includes('brand') || Array.from(headerMap.values()).includes('model'));
+
+    const dataRows = hasHeader ? rows.slice(1) : rows;
+
+    const errors: Array<{ row: number; message: string }> = [];
+    const fileDedupe = new Map<string, Record<string, unknown>>();
+    let skippedEmpty = 0;
+
+    for (let idx = 0; idx < dataRows.length; idx++) {
+      const row = dataRows[idx];
+      const rowNo = hasHeader ? idx + 2 : idx + 1;
+
+      const getCellByKey = (k: CsvHeaderKey): string | undefined => {
+        for (const [i, mapped] of headerMap.entries()) {
+          if (mapped === k) return row[i];
+        }
+        return undefined;
+      };
+
+      const rawBrand = hasHeader ? getCellByKey('brand') : row[0];
+      const rawModel = hasHeader ? getCellByKey('model') : row[1];
+      const rawRepairItem = hasHeader ? getCellByKey('repair_item') : row[2];
+      const rawQuality = hasHeader ? getCellByKey('quality') : row[3];
+      const rawPrice = hasHeader ? getCellByKey('price') : row[4];
+      const rawWarranty = hasHeader ? getCellByKey('warranty') : row[5];
+      const rawRepairType = hasHeader ? getCellByKey('repair_type') : row[6];
+      const rawCategory = hasHeader ? getCellByKey('category') : row[7];
+      const rawModelCode = hasHeader ? getCellByKey('model_code') : row[8];
+
+      const brand = normalizeBrand(rawBrand || '');
+      const model = normalizeModel(rawModel || '');
+      const repairItem = normalizeRepairItem(rawRepairItem || '');
+      const quality = normalizeQuality(rawQuality || '');
+
+      if (!brand && !model && !repairItem) {
+        skippedEmpty += 1;
+        continue;
+      }
+
+      if (!brand || !model || !repairItem) {
+        errors.push({ row: rowNo, message: 'Missing required fields (brand/model/repair_item).' });
+        continue;
+      }
+
+      const price = parsePrice(rawPrice || '');
+      if (price === null) {
+        errors.push({ row: rowNo, message: `Invalid price: ${rawPrice || ''}` });
+        continue;
+      }
+
+      const category = (rawCategory || '').trim();
+      const warranty = (rawWarranty || '').trim();
+      const repairType = (rawRepairType || '').trim();
+      const modelCode = (rawModelCode || '').trim();
+
+      const finalCategory = category || inferCategory(brand, model);
+      const finalWarranty = warranty || '6 MESI';
+      const finalRepairType = repairType || inferRepairType(repairItem);
+      const priority = calculatePriority(brand, model, finalCategory);
+
+      const key = makeKey(brand, model, repairItem, quality);
+      fileDedupe.set(key, {
+        brand,
+        model,
+        repair_item: repairItem,
+        repair_type: finalRepairType,
+        category: finalCategory,
+        quality,
+        price,
+        warranty: finalWarranty,
+        priority,
+        is_unstable: false,
+        model_code: modelCode || undefined,
+      });
+    }
+
+    const records = Array.from(fileDedupe.values()) as Array<{
+      brand: string;
+      model: string;
+      repair_item: string;
+      repair_type: string;
+      category: string;
+      quality: string;
+      price: number;
+      warranty: string;
+      priority: number;
+      is_unstable: boolean;
+      model_code?: string;
+    }>;
+
+    const brands = Array.from(new Set(records.map((r) => r.brand)));
+    const models = Array.from(new Set(records.map((r) => r.model)));
+    const existingByKey = brands.length > 0 ? await fetchExistingForImport(brands, models) : new Map();
+
+    let willInsert = 0;
+    let willUpdate = 0;
+    for (const r of records) {
+      const key = makeKey(r.brand, r.model, r.repair_item, r.quality);
+      const existing = existingByKey.get(key);
+      if (!existing) {
+        willInsert += 1;
+        continue;
+      }
+
+      const incomingModelCode = (r.model_code || '').trim();
+      const hasIncomingModelCode = incomingModelCode.length > 0;
+
+      if (!hasIncomingModelCode && (existing.model_code || '').trim()) {
+        r.model_code = existing.model_code || undefined;
+      }
+      if (!r.category && existing.category) r.category = existing.category;
+      if (!r.warranty && existing.warranty) r.warranty = existing.warranty;
+      if (!r.repair_type && existing.repair_type) r.repair_type = existing.repair_type || 'other';
+      if (!r.priority && typeof existing.priority === 'number') r.priority = existing.priority;
+
+      const changed =
+        (existing.price ?? 0) !== r.price ||
+        (existing.warranty || '') !== r.warranty ||
+        (existing.repair_type || '') !== r.repair_type ||
+        (existing.category || '') !== r.category ||
+        (existing.model_code || '') !== (r.model_code || '');
+
+      if (changed) willUpdate += 1;
+    }
+
+    if (dryRun) {
+      return NextResponse.json({
+        message: 'Dry run',
+        totalRows: dataRows.length,
+        parsed: records.length,
+        skippedEmpty,
+        deduped: dataRows.length - skippedEmpty - records.length,
+        willInsert,
+        willUpdate,
+        errors: errors.slice(0, 50),
+      });
+    }
+
+    if (errors.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'CSV contains invalid rows. Fix errors or use dryRun to inspect.',
+          errors: errors.slice(0, 50),
+        },
+        { status: 400 }
+      );
+    }
+
     const BATCH_SIZE = 500;
-    let insertedCount = 0;
-    
+    let affected = 0;
     for (let i = 0; i < records.length; i += BATCH_SIZE) {
-        const batch = records.slice(i, i + BATCH_SIZE);
-        const { error } = await getSupabase().from('repair_quotes').insert(batch);
-        if (error) {
-            console.error('Insert error:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
-        }
-        insertedCount += batch.length;
+      const batch = records.slice(i, i + BATCH_SIZE);
+      const { error } = await getSupabase()
+        .from('repair_quotes')
+        .upsert(batch, { onConflict: 'brand,model,repair_item,quality' });
+      if (error) {
+        console.error('Upsert error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      affected += batch.length;
     }
 
-    return NextResponse.json({ message: 'Success', count: insertedCount });
+    return NextResponse.json({ message: 'Success', count: affected, willInsert, willUpdate });
   } catch (err) {
     console.error('Import error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

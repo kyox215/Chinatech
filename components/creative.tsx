@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Award,
@@ -10,10 +10,12 @@ import {
   Brush,
   Camera,
   ChevronDown,
+  ChevronLeft,
   Cloud,
   Code,
   Crown,
   Download,
+  Upload,
   FileText,
   Grid,
   Heart,
@@ -57,12 +59,33 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
 
 import { RecyclingApp } from "@/components/recycling-app"
 import { RepairApp } from "@/components/repair-app"
+import { OrderManagementApp } from "@/components/order-management-app"
 
 // Sample data for apps
 const apps = [
@@ -378,6 +401,7 @@ const sidebarItems = [
     items: [
       { title: "回收报价", url: "#recycling", badge: "New", value: "recycling" },
       { title: "维修报价", url: "#repair", badge: "Hot", value: "repair" },
+      { title: "订单管理", url: "#orders", badge: "New", value: "orders" },
     ],
   },
 ]
@@ -394,12 +418,112 @@ const sidebarItems = [
 
 export function DesignaliCreative() {
   const [progress, setProgress] = useState(0)
-  const [notifications, setNotifications] = useState(5)
+  const [cloudConnected, setCloudConnected] = useState(false)
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null)
+  const restoreInputRef = useRef<HTMLInputElement | null>(null)
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false)
+  const [restoreDraft, setRestoreDraft] = useState<null | {
+    activeTab?: string
+    sidebarOpen?: boolean
+    expandedItems?: Record<string, boolean>
+    notifications?: Array<{ id: string; title: string; time: string; read: boolean }>
+    messages?: Array<{ id: string; title: string; time: string; read: boolean }>
+  }>(null)
+
+  const [notifications, setNotifications] = useState<Array<{ id: string; title: string; time: string; read: boolean }>>([
+    { id: 'n1', title: '维修报价：新增品牌型号已同步', time: '刚刚', read: false },
+    { id: 'n2', title: '系统更新：导入/导出 CSV 已上线', time: '10 分钟前', read: false },
+    { id: 'n3', title: '提示：可在管理菜单进行批量操作', time: '1 小时前', read: false },
+    { id: 'n4', title: '安全提醒：建议定期导出备份', time: '昨天', read: false },
+    { id: 'n5', title: '欢迎使用 ChinaTechOS 控制台', time: '2 天前', read: false },
+  ])
+  const [messages, setMessages] = useState<Array<{ id: string; title: string; time: string; read: boolean }>>([
+    { id: 'm1', title: '欢迎：这里会展示系统消息与更新说明', time: '刚刚', read: false },
+    { id: 'm2', title: '提示：支持快捷键切换应用模块', time: '今天', read: true },
+  ])
+  const [messagesOpen, setMessagesOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+
+  const unreadNotifications = useMemo(() => notifications.filter((n) => !n.read).length, [notifications])
+  const unreadMessages = useMemo(() => messages.filter((m) => !m.read).length, [messages])
   const [activeTab, setActiveTab] = useState("home")
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const [showMainHeader, setShowMainHeader] = useState(true)
+  const lastScrollY = useRef(0)
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScrollY = e.currentTarget.scrollTop
+    if (currentScrollY > lastScrollY.current && currentScrollY > 10) {
+        setShowMainHeader(false)
+    } else {
+        setShowMainHeader(true)
+    }
+    lastScrollY.current = currentScrollY
+  }
+
+  const downloadTextFile = (filename: string, content: string, type: string) => {
+    const blob = new Blob([content], { type })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportBackup = () => {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      activeTab,
+      sidebarOpen,
+      expandedItems,
+      notifications,
+      messages,
+    }
+    downloadTextFile(`ChinaTechOS_backup_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2), 'application/json')
+  }
+
+  const requestRestoreBackup = () => {
+    restoreInputRef.current?.click()
+  }
+
+  const handleRestoreFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const parsed = JSON.parse(text)
+      const draft: typeof restoreDraft = {
+        activeTab: typeof parsed?.activeTab === 'string' ? parsed.activeTab : undefined,
+        sidebarOpen: typeof parsed?.sidebarOpen === 'boolean' ? parsed.sidebarOpen : undefined,
+        expandedItems: typeof parsed?.expandedItems === 'object' && parsed?.expandedItems ? parsed.expandedItems : undefined,
+        notifications: Array.isArray(parsed?.notifications) ? parsed.notifications : undefined,
+        messages: Array.isArray(parsed?.messages) ? parsed.messages : undefined,
+      }
+      setRestoreDraft(draft)
+      setRestoreDialogOpen(true)
+    } catch {
+      setRestoreDraft(null)
+      setRestoreDialogOpen(true)
+    } finally {
+      e.target.value = ''
+    }
+  }
+
+  const applyRestoreDraft = () => {
+    if (!restoreDraft) return
+    if (restoreDraft.activeTab) setActiveTab(restoreDraft.activeTab)
+    if (typeof restoreDraft.sidebarOpen === 'boolean') setSidebarOpen(restoreDraft.sidebarOpen)
+    if (restoreDraft.expandedItems) setExpandedItems(restoreDraft.expandedItems)
+    if (restoreDraft.notifications) setNotifications(restoreDraft.notifications)
+    if (restoreDraft.messages) setMessages(restoreDraft.messages)
+  }
 
   // Simulate progress loading
   useEffect(() => {
@@ -478,6 +602,32 @@ export function DesignaliCreative() {
         <div className="fixed inset-0 z-[90] bg-black/50 md:hidden" onClick={() => setMobileMenuOpen(false)} />
       )}
 
+      {/* Hidden Restore Input */}
+      <input ref={restoreInputRef} type="file" accept="application/json" className="hidden" onChange={handleRestoreFileChange} />
+
+      {/* Floating Toggle Buttons */}
+      <div className="fixed top-4 left-4 z-50 flex gap-2">
+         {/* Mobile Toggle */}
+         <Button 
+            variant="secondary" 
+            size="icon" 
+            className={cn("md:hidden rounded-full shadow-md bg-background/80 backdrop-blur-sm border", mobileMenuOpen ? "hidden" : "flex")}
+            onClick={() => setMobileMenuOpen(true)}
+         >
+            <Menu className="h-5 w-5" />
+         </Button>
+
+         {/* Desktop Toggle */}
+         <Button 
+            variant="secondary" 
+            size="icon" 
+            className={cn("hidden md:flex rounded-full shadow-md bg-background/80 backdrop-blur-sm border transition-all duration-300", sidebarOpen ? "opacity-0 pointer-events-none" : "opacity-100")}
+             onClick={() => setSidebarOpen(true)}
+         >
+            <PanelLeft className="h-5 w-5" />
+         </Button>
+      </div>
+
       {/* Sidebar - Mobile */}
       <div
         className={cn(
@@ -487,15 +637,7 @@ export function DesignaliCreative() {
       >
         <div className="flex h-full flex-col border-r">
           <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                <Wand2 className="size-5" />
-              </div>
-              <div>
-                <h2 className="font-semibold">Designali</h2>
-                <p className="text-xs text-muted-foreground">创意套件</p>
-              </div>
-            </div>
+            <h1 className="text-xl font-semibold">ChinaTechOS</h1>
             <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
               <X className="h-5 w-5" />
             </Button>
@@ -575,24 +717,155 @@ export function DesignaliCreative() {
           </ScrollArea>
 
           <div className="border-t p-3">
-            <div className="space-y-1">
-              <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
-                <Settings className="h-5 w-5" />
-                <span>设置</span>
-              </button>
-              <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-6 w-6">
+            <div className="flex items-center justify-between px-1 mb-3">
+              {/* Cloud */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground" title="云存储">
+                    <Cloud className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="top" className="min-w-56 ml-2">
+                  <DropdownMenuLabel>
+                    {cloudConnected ? "云端已连接" : "云端未连接"}
+                    {lastSyncAt ? ` · ${lastSyncAt.slice(11, 16)}` : ""}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      if (!cloudConnected) setCloudConnected(true)
+                      setLastSyncAt(new Date().toISOString())
+                    }}
+                  >
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    立即同步
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => exportBackup()}>
+                    <Download className="h-4 w-4 mr-2" />
+                    下载备份
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => requestRestoreBackup()}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    恢复备份
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setCloudConnected((v) => !v)
+                      if (cloudConnected) setLastSyncAt(null)
+                    }}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    {cloudConnected ? "断开连接" : "连接云端"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Messages */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 rounded-lg relative text-muted-foreground hover:text-foreground" 
+                onClick={() => setMessagesOpen(true)} 
+                title="消息"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {unreadMessages > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background" />}
+              </Button>
+
+              {/* Notifications */}
+              <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg relative text-muted-foreground hover:text-foreground" title="通知">
+                    <Bell className="h-4 w-4" />
+                    {unreadNotifications > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background" />}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" side="top" className="w-80 p-0 ml-2">
+                  <div className="flex items-center justify-between px-4 py-3 border-b">
+                    <div className="text-sm font-semibold">通知</div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 rounded-xl text-xs"
+                        onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))}
+                      >
+                        全部已读
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 rounded-xl text-xs"
+                        onClick={() => setNotifications([])}
+                      >
+                        清空
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-64">
+                    <div className="p-2 space-y-1">
+                      {notifications.length === 0 ? (
+                        <div className="px-2 py-8 text-sm text-muted-foreground text-center">暂无通知</div>
+                      ) : (
+                        notifications.map((n) => (
+                          <button
+                            key={n.id}
+                            className={cn(
+                              "w-full text-left rounded-xl px-3 py-2 hover:bg-accent transition-colors",
+                              !n.read && "bg-accent/50"
+                            )}
+                            onClick={() => setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))}
+                          >
+                            <div className="text-sm font-medium">{n.title}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{n.time}</div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+
+              {/* Settings */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground" title="设置">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* User Profile */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex w-full items-center gap-3 rounded-2xl p-2 hover:bg-accent transition-all duration-200 group">
+                  <Avatar className="h-9 w-9 border-2 border-background shadow-sm group-hover:border-primary/20 transition-colors">
                     <AvatarImage src="/placeholder.svg?height=32&width=32" alt="用户" />
                     <AvatarFallback>JD</AvatarFallback>
                   </Avatar>
-                  <span>John Doe</span>
-                </div>
-                <Badge variant="outline" className="ml-auto">
-                  Pro
-                </Badge>
-              </button>
-            </div>
+                  <div className="flex flex-col items-start overflow-hidden">
+                    <span className="text-sm font-medium truncate w-full text-left">John Doe</span>
+                    <span className="text-xs text-muted-foreground truncate w-full text-left">Pro Plan</span>
+                  </div>
+                  <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground opacity-50 group-hover:opacity-100" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="min-w-56 ml-2">
+                <DropdownMenuLabel>我的账户</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setMessagesOpen(true)}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  查看消息
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setNotificationsOpen(true)}>
+                  <Bell className="h-4 w-4 mr-2" />
+                  查看通知
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setMobileMenuOpen(false)}>
+                   <X className="h-4 w-4 mr-2" />
+                   关闭菜单
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -600,89 +873,126 @@ export function DesignaliCreative() {
       {/* Sidebar - Desktop */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-[100] hidden w-64 transform border-r bg-background transition-transform duration-300 ease-in-out md:block",
+          "fixed inset-y-0 left-0 z-40 hidden transform border-r bg-background transition-all duration-300 ease-in-out md:block",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          isSidebarCollapsed ? "w-20" : "w-64"
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                <Wand2 className="size-5" />
-              </div>
-              <div>
-                <h2 className="font-semibold">Designali</h2>
-                <p className="text-xs text-muted-foreground">创意套件</p>
-              </div>
-            </div>
+          <div className={cn("flex items-center p-4", isSidebarCollapsed ? "justify-center" : "justify-between")}>
+             {!isSidebarCollapsed && <h1 className="text-xl font-semibold">ChinaTechOS</h1>}
+            {!isSidebarCollapsed && (
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => setIsSidebarCollapsed(true)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+             {/* If collapsed, maybe show nothing or a logo? User didn't specify, but keeping it clean is safer. */}
           </div>
 
           <div className="px-3 py-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="搜索..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
-            </div>
+            {!isSidebarCollapsed ? (
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input type="search" placeholder="搜索..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+                </div>
+            ) : (
+                <div className="flex justify-center">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl" onClick={() => setIsSidebarCollapsed(false)}>
+                        <Search className="h-5 w-5" />
+                    </Button>
+                </div>
+            )}
           </div>
 
           <ScrollArea className="flex-1 px-3 py-2">
             <div className="space-y-1">
               {sidebarItems.map((item) => (
                 <div key={item.title} className="mb-1">
-                  <button
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
-                      (activeTab === item.value || (item.items && item.items.some(sub => sub.value === activeTab))) ? "bg-primary/10 text-primary" : "hover:bg-muted",
-                    )}
-                    onClick={() => handleSidebarClick(item.value || "", !!item.items, item.title)}
-                  >
-                    <div className="flex items-center gap-3">
-                      {item.icon}
-                      <span>{item.title}</span>
-                    </div>
-                    {item.badge && (
-                      <Badge variant="outline" className="ml-auto rounded-full px-2 py-0.5 text-xs">
-                        {item.badge}
-                      </Badge>
-                    )}
-                    {item.items && (
-                      <ChevronDown
-                        className={cn(
-                          "ml-2 h-4 w-4 transition-transform",
-                          expandedItems[item.title] ? "rotate-180" : "",
-                        )}
-                      />
-                    )}
-                  </button>
-
-                  {item.items && expandedItems[item.title] && (
-                    <div className="mt-1 ml-6 space-y-1 border-l pl-3">
-                      {item.items.map((subItem) => (
-                        <a
-                          key={subItem.title}
-                          href={subItem.url}
-                          className={cn(
-                            "flex items-center justify-between rounded-2xl px-3 py-2 text-sm hover:bg-muted",
-                            activeTab === subItem.value ? "bg-primary/5 text-primary font-medium" : ""
-                          )}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (subItem.value) {
-                                handleSidebarClick(subItem.value, false, subItem.title);
-                            } else if (subItem.url.startsWith("#")) {
-                                const tabName = subItem.url.replace("#", "");
-                                handleSidebarClick(tabName, false, subItem.title);
-                            }
-                          }}
+                  {isSidebarCollapsed ? (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={0}>
+                            <TooltipTrigger asChild>
+                                <button
+                                    className={cn(
+                                    "flex w-full items-center justify-center rounded-2xl px-3 py-2 text-sm font-medium",
+                                    (activeTab === item.value || (item.items && item.items.some(sub => sub.value === activeTab))) ? "bg-primary/10 text-primary" : "hover:bg-muted",
+                                    )}
+                                    onClick={() => {
+                                        if (item.items) {
+                                            setIsSidebarCollapsed(false)
+                                            setExpandedItems(prev => ({ ...prev, [item.title]: true }))
+                                        } else {
+                                            handleSidebarClick(item.value || "", !!item.items, item.title)
+                                        }
+                                    }}
+                                >
+                                    {item.icon}
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                                {item.title}
+                            </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                  ) : (
+                      <>
+                        <button
+                            className={cn(
+                            "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
+                            (activeTab === item.value || (item.items && item.items.some(sub => sub.value === activeTab))) ? "bg-primary/10 text-primary" : "hover:bg-muted",
+                            )}
+                            onClick={() => handleSidebarClick(item.value || "", !!item.items, item.title)}
                         >
-                          {subItem.title}
-                          {subItem.badge && (
+                            <div className="flex items-center gap-3">
+                            {item.icon}
+                            <span>{item.title}</span>
+                            </div>
+                            {item.badge && (
                             <Badge variant="outline" className="ml-auto rounded-full px-2 py-0.5 text-xs">
-                              {subItem.badge}
+                                {item.badge}
                             </Badge>
-                          )}
-                        </a>
-                      ))}
-                    </div>
+                            )}
+                            {item.items && (
+                            <ChevronDown
+                                className={cn(
+                                "ml-2 h-4 w-4 transition-transform",
+                                expandedItems[item.title] ? "rotate-180" : "",
+                                )}
+                            />
+                            )}
+                        </button>
+
+                        {item.items && expandedItems[item.title] && (
+                            <div className="mt-1 ml-6 space-y-1 border-l pl-3">
+                            {item.items.map((subItem) => (
+                                <a
+                                key={subItem.title}
+                                href={subItem.url}
+                                className={cn(
+                                    "flex items-center justify-between rounded-2xl px-3 py-2 text-sm hover:bg-muted",
+                                    activeTab === subItem.value ? "bg-primary/5 text-primary font-medium" : ""
+                                )}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (subItem.value) {
+                                        handleSidebarClick(subItem.value, false, subItem.title);
+                                    } else if (subItem.url.startsWith("#")) {
+                                        const tabName = subItem.url.replace("#", "");
+                                        handleSidebarClick(tabName, false, subItem.title);
+                                    }
+                                }}
+                                >
+                                {subItem.title}
+                                {subItem.badge && (
+                                    <Badge variant="outline" className="ml-auto rounded-full px-2 py-0.5 text-xs">
+                                    {subItem.badge}
+                                    </Badge>
+                                )}
+                                </a>
+                            ))}
+                            </div>
+                        )}
+                      </>
                   )}
                 </div>
               ))}
@@ -690,30 +1000,169 @@ export function DesignaliCreative() {
           </ScrollArea>
 
           <div className="border-t p-3">
-            <div className="space-y-1">
-              <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
-                <Settings className="h-5 w-5" />
-                <span>设置</span>
-              </button>
-              <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-6 w-6">
+            <div className={cn("flex items-center gap-1 mb-3", isSidebarCollapsed ? "flex-col space-y-2" : "justify-between px-1")}>
+              {/* Cloud */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground" title="云存储">
+                    <Cloud className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="right" className="min-w-56 ml-2">
+                  <DropdownMenuLabel>
+                    {cloudConnected ? "云端已连接" : "云端未连接"}
+                    {lastSyncAt ? ` · ${lastSyncAt.slice(11, 16)}` : ""}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      if (!cloudConnected) setCloudConnected(true)
+                      setLastSyncAt(new Date().toISOString())
+                    }}
+                  >
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    立即同步
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => exportBackup()}>
+                    <Download className="h-4 w-4 mr-2" />
+                    下载备份
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => requestRestoreBackup()}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    恢复备份
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setCloudConnected((v) => !v)
+                      if (cloudConnected) setLastSyncAt(null)
+                    }}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    {cloudConnected ? "断开连接" : "连接云端"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Messages */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 rounded-lg relative text-muted-foreground hover:text-foreground" 
+                onClick={() => setMessagesOpen(true)} 
+                title="消息"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {unreadMessages > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background" />}
+              </Button>
+
+              {/* Notifications */}
+              <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg relative text-muted-foreground hover:text-foreground" title="通知">
+                    <Bell className="h-4 w-4" />
+                    {unreadNotifications > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background" />}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" side="right" className="w-80 p-0 ml-2">
+                  <div className="flex items-center justify-between px-4 py-3 border-b">
+                    <div className="text-sm font-semibold">通知</div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 rounded-xl text-xs"
+                        onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))}
+                      >
+                        全部已读
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 rounded-xl text-xs"
+                        onClick={() => setNotifications([])}
+                      >
+                        清空
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-64">
+                    <div className="p-2 space-y-1">
+                      {notifications.length === 0 ? (
+                        <div className="px-2 py-8 text-sm text-muted-foreground text-center">暂无通知</div>
+                      ) : (
+                        notifications.map((n) => (
+                          <button
+                            key={n.id}
+                            className={cn(
+                              "w-full text-left rounded-xl px-3 py-2 hover:bg-accent transition-colors",
+                              !n.read && "bg-accent/50"
+                            )}
+                            onClick={() => setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))}
+                          >
+                            <div className="text-sm font-medium">{n.title}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{n.time}</div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+
+              {/* Settings */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground" title="设置">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* User Profile */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={cn("flex w-full items-center gap-3 rounded-2xl p-2 hover:bg-accent transition-all duration-200 group", isSidebarCollapsed ? "justify-center" : "")}>
+                  <Avatar className="h-9 w-9 border-2 border-background shadow-sm group-hover:border-primary/20 transition-colors">
                     <AvatarImage src="/placeholder.svg?height=32&width=32" alt="用户" />
                     <AvatarFallback>JD</AvatarFallback>
                   </Avatar>
-                  <span>John Doe</span>
-                </div>
-                <Badge variant="outline" className="ml-auto">
-                  Pro
-                </Badge>
-              </button>
-            </div>
+                  {!isSidebarCollapsed && (
+                    <div className="flex flex-col items-start overflow-hidden">
+                      <span className="text-sm font-medium truncate w-full text-left">John Doe</span>
+                      <span className="text-xs text-muted-foreground truncate w-full text-left">Pro Plan</span>
+                    </div>
+                  )}
+                  {!isSidebarCollapsed && <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground opacity-50 group-hover:opacity-100" />}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="right" className="min-w-56 ml-2">
+                <DropdownMenuLabel>我的账户</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setMessagesOpen(true)}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  查看消息
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setNotificationsOpen(true)}>
+                  <Bell className="h-4 w-4 mr-2" />
+                  查看通知
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setSidebarOpen(false)}>
+                   <PanelLeft className="h-4 w-4 mr-2" />
+                   收起侧栏
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {isSidebarCollapsed && (
+                <Button variant="ghost" size="icon" className="w-full mt-2 h-8 hover:bg-accent rounded-xl" onClick={() => setIsSidebarCollapsed(false)} title="展开">
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className={cn("min-h-screen transition-all duration-300 ease-in-out", sidebarOpen ? "md:pl-64" : "md:pl-0")}>
+      <div className={cn("min-h-screen transition-all duration-300 ease-in-out", sidebarOpen ? (isSidebarCollapsed ? "md:pl-20" : "md:pl-64") : "md:pl-0")}>
         <motion.header 
           className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background/95 px-4 backdrop-blur overflow-hidden"
           animate={{ 
@@ -722,15 +1171,8 @@ export function DesignaliCreative() {
           }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
-            <Menu className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="hidden md:flex" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            <PanelLeft className="h-5 w-5" />
-          </Button>
           <div className="flex flex-1 items-center justify-between">
             <div className="flex flex-col">
-                <h1 className="text-xl font-semibold">Designali 创意套件</h1>
                 {/* Dynamic Breadcrumbs */}
                 <div className="hidden md:flex items-center text-xs text-muted-foreground mt-1">
                     <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => handleSidebarClick("home", false, "")}>首页</span>
@@ -749,55 +1191,94 @@ export function DesignaliCreative() {
                     )}
                 </div>
             </div>
-            <div className="flex items-center gap-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-2xl">
-                      <Cloud className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>云存储</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-2xl">
-                      <MessageSquare className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>消息</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-2xl relative">
-                      <Bell className="h-5 w-5" />
-                      {notifications > 0 && (
-                        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                          {notifications}
-                        </span>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>通知</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <Avatar className="h-9 w-9 border-2 border-primary">
-                <AvatarImage src="/placeholder.svg?height=40&width=40" alt="用户" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-            </div>
           </div>
         </motion.header>
 
-        <main className="flex-1 p-4 md:p-6">
-          <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Sheet open={messagesOpen} onOpenChange={setMessagesOpen}>
+          <SheetContent side="right" className="w-[360px] sm:w-[420px] p-0">
+            <SheetHeader className="px-4 py-3 border-b">
+              <SheetTitle>消息</SheetTitle>
+            </SheetHeader>
+            <div className="flex items-center justify-between px-4 py-2">
+              <div className="text-sm text-muted-foreground">未读：{unreadMessages}</div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 rounded-xl"
+                onClick={() => setMessages((prev) => prev.map((m) => ({ ...m, read: true })))}
+              >
+                全部已读
+              </Button>
+            </div>
+            <ScrollArea className="h-[calc(100vh-8rem)]">
+              <div className="p-2 space-y-1">
+                {messages.length === 0 ? (
+                  <div className="px-2 py-10 text-sm text-muted-foreground text-center">暂无消息</div>
+                ) : (
+                  messages.map((m) => (
+                    <button
+                      key={m.id}
+                      className={cn(
+                        "w-full text-left rounded-2xl px-3 py-3 hover:bg-accent transition-colors",
+                        !m.read && "bg-accent/50"
+                      )}
+                      onClick={() => setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, read: true } : x)))}
+                    >
+                      <div className="text-sm font-medium">{m.title}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{m.time}</div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </SheetContent>
+        </Sheet>
+
+        <AlertDialog
+          open={restoreDialogOpen}
+          onOpenChange={(open) => {
+            setRestoreDialogOpen(open)
+            if (!open) setRestoreDraft(null)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>恢复备份</AlertDialogTitle>
+              <AlertDialogDescription>
+                将使用备份文件覆盖当前本地界面状态，不会修改数据库数据。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            {!restoreDraft ? (
+              <div className="text-sm text-destructive">备份文件无效或解析失败。</div>
+            ) : (
+              <div className="space-y-2 text-sm">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+                  {restoreDraft.activeTab && <span>Tab: {restoreDraft.activeTab}</span>}
+                  {typeof restoreDraft.sidebarOpen === "boolean" && <span>侧栏: {restoreDraft.sidebarOpen ? "开" : "关"}</span>}
+                  {restoreDraft.notifications && <span>通知: {restoreDraft.notifications.length}</span>}
+                  {restoreDraft.messages && <span>消息: {restoreDraft.messages.length}</span>}
+                </div>
+              </div>
+            )}
+
+            <AlertDialogFooter>
+              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={!restoreDraft}
+                onClick={() => {
+                  applyRestoreDraft()
+                }}
+              >
+                确认恢复
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <main className={cn("flex-1 transition-all duration-300", ["recycling", "repair", "orders"].includes(activeTab) ? "p-0 overflow-hidden" : "p-4 md:p-6 overflow-auto")}>
+          <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full h-full">
 
 
             <AnimatePresence mode="wait">
@@ -1612,12 +2093,20 @@ export function DesignaliCreative() {
                   </section>
                 </TabsContent>
 
-                <TabsContent value="recycling" className="space-y-8 mt-0 h-[calc(100dvh-5rem)]">
-                  <RecyclingApp setMainHeaderVisible={setShowMainHeader} />
+                <TabsContent value="recycling" className="space-y-8 mt-0 h-full">
+                  <div className="h-full overflow-y-auto" onScroll={handleScroll}>
+                    <RecyclingApp setMainHeaderVisible={setShowMainHeader} />
+                  </div>
                 </TabsContent>
 
-                <TabsContent value="repair" className="space-y-8 mt-0 h-[calc(100dvh-5rem)]">
-                  <RepairApp setMainHeaderVisible={setShowMainHeader} />
+                <TabsContent value="repair" className="space-y-8 mt-0 h-full">
+                  <div className="h-full overflow-y-auto" onScroll={handleScroll}>
+                    <RepairApp setMainHeaderVisible={setShowMainHeader} />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="orders" className="space-y-8 mt-0 h-full">
+                  <OrderManagementApp setMainHeaderVisible={setShowMainHeader} />
                 </TabsContent>
               </motion.div>
             </AnimatePresence>

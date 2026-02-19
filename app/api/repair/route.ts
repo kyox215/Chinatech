@@ -29,39 +29,45 @@ export async function GET(request: Request) {
   if (brand && brand !== 'all') countQuery.eq('brand', brand);
   if (model) countQuery.eq('model', model);
   
-  const { count, error: countError } = await countQuery;
-  if (countError) return NextResponse.json({ error: countError.message }, { status: 500 });
-  
-  const total = count || 0;
+  // Return without cache to ensure data sync
+  // Optimize: Fetch all data sequentially to avoid connection limits but ensure completeness
+  const allData = [];
+  let from = 0;
   const PAGE_SIZE = 1000;
-  const promises = [];
-  
-  for (let from = 0; from < total; from += PAGE_SIZE) {
+  let hasMore = true;
+
+  while (hasMore) {
       const q = getSupabase()
         .from('repair_quotes')
         .select('*')
-        .order('priority', { ascending: false })
-        .order('model')
+        .order('brand', { ascending: true }) // Sort by brand to keep data organized
+        .order('model', { ascending: true })
         .range(from, from + PAGE_SIZE - 1);
 
       if (brand && brand !== 'all') q.eq('brand', brand);
       if (model) q.eq('model', model);
       
-      promises.push(q);
-  }
-  
-  const results = await Promise.all(promises);
-  const allData = [];
-  
-  for (const result of results) {
-      if (result.error) return NextResponse.json({ error: result.error.message }, { status: 500 });
-      if (result.data) allData.push(...result.data);
+      const { data, error } = await q;
+      
+      if (error) {
+          return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      
+      if (data && data.length > 0) {
+          allData.push(...data);
+          from += PAGE_SIZE;
+          if (data.length < PAGE_SIZE) hasMore = false;
+      } else {
+          hasMore = false;
+      }
   }
 
-  // Return with Cache headers (10 minutes browser cache, 1 hour stale revalidate)
+  // Return with No-Store headers to prevent caching
   return NextResponse.json(allData, {
       headers: {
-          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
       }
   });
 }

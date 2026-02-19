@@ -32,6 +32,17 @@ npm run dev
 - `components/ui/`: UI 组件库 (shadcn/ui)
 - `public/`: 静态资源
 
+## 数据库配置 (Supabase)
+
+本项目使用 Supabase 作为后端数据库。在开始使用前，请确保完成以下配置：
+
+1.  **创建项目**: 在 Supabase 创建一个新的项目。
+2.  **配置环境变量**: 将 Supabase URL 和 Anon Key 添加到 `.env.local` 文件中。
+3.  **运行迁移**: 在 Supabase Dashboard -> SQL Editor 中运行以下 SQL 文件以创建必要的表结构：
+    - `supabase/migrations/20260218_create_orders_inventory.sql` (创建订单与库存表)
+    - `supabase/migrations/20260218_dedupe_unique_repair_quotes.sql` (如果需要维修报价功能)
+4.  **刷新缓存**: 执行 SQL 后，前往 Project Settings -> API -> Reload schema cache 以刷新 API 缓存。
+
 ## 修改记录
 
 - 初始化项目结构
